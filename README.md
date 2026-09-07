@@ -26,24 +26,52 @@ paper1_full_manuscript.html       Full-length manuscript: RQs, gaps, detailed
 TODO.md                       Phase checklist
 ```
 
-## Quick start
+## Run everything (full reproduction)
+
+One command runs **every part** of the pipeline — data inspection,
+measurement, gap analysis, LPA estimation (K = 2…10), model selection,
+profile analysis, predictors, robustness, K=7 diagnostics, 200-replicate
+bootstrap stability, 5-fold cross-validation, figures, and all three
+manuscripts:
 
 ```bash
-git clone https://github.com/<OWNER>/<REPO>.git
-cd <REPO>
+git clone https://github.com/frankvonka/intention-behaviour-gap-paper1.git
+cd intention-behaviour-gap-paper1
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Full reproduction (writes results/, figures, all three manuscripts)
 python3 scripts/REPRODUCE_ALL.py
 ```
+
+`scripts/REPRODUCE_ALL.py` is the master script: it executes every phase in
+dependency order (01 → 27 plus the figure, evidence, and manuscript build
+steps), fails loudly on any error, and prints a completion summary. That is
+the only command you need.
+
+**What you get** — everything regenerated from `data.xls`:
+
+| Output | Location |
+|---|---|
+| Data quality / duplicates / missingness | `results/01_data_inspection/` |
+| Construct scores + Cronbach's alpha | `results/02_measurement/` |
+| Intention–behaviour gap statistics | `results/03_gap_analysis/` |
+| LPA estimation K = 2…10 + BIC selection (K = 7) | `results/04_lpa_estimation/`, `results/05_lpa_selection/` |
+| Profile descriptives, predictors, robustness, audits | `results/06..22_*/`, `results/k7_primary/` |
+| K=7 classification quality, directional stability, 5-fold CV | `results/paper1_strengthening/` |
+| Publication figures 1–10 (standalone PNG) | `results/paper1_final/figures/png/` |
+| **Full-length manuscript** (5 tables, 10 figures) | `paper1_full_manuscript.html` |
+| Main-manuscript variant (10 figures) | `paper1_final_manuscript.html` |
+| K=7 manuscript variant (12 figures) | `paper1_final_manuscript_k7.html` |
 
 Runtime: roughly 1–2 hours on a modern laptop. The heavy cost is
 `n_init=1000` Gaussian-mixture refits, 200-replicate bootstraps, and 5-fold
 cross-validation. Everything is seeded (`random_state=42`) — reruns reproduce
 the frozen `results/` bit-for-bit up to floating-point noise.
 
-### Fast paths
+## Rebuild without re-analysis (fast paths)
+
+If `results/` already exists, you can rebuild figures and manuscripts without
+re-running the analysis phases:
 
 ```bash
 # Rebuild only the figures + manuscripts from the frozen evidence (~2 min)
