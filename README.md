@@ -21,6 +21,8 @@ results/                      Frozen computational evidence package (all CSVs th
                               everything from scratch.
 paper1_final_manuscript_k7.html   Primary submission-ready manuscript (12 figures, embedded)
 paper1_final_manuscript.html      Main-manuscript variant (10 figures, embedded)
+paper1_full_manuscript.html       Full-length manuscript: RQs, gaps, detailed
+                                  methodology, results, discussion (5 tables, 10 figures)
 TODO.md                       Phase checklist
 ```
 
@@ -32,7 +34,7 @@ cd <REPO>
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Full reproduction (writes results/, figures, both manuscripts)
+# Full reproduction (writes results/, figures, all three manuscripts)
 python3 scripts/REPRODUCE_ALL.py
 ```
 
@@ -47,6 +49,7 @@ the frozen `results/` bit-for-bit up to floating-point noise.
 # Rebuild only the figures + manuscripts from the frozen evidence (~2 min)
 python3 scripts/generate_draft_figures.py && python3 scripts/build_k7_manuscript.py
 python3 scripts/generate_figures_paper1.py && python3 scripts/build_paper1_manuscript.py
+python3 scripts/build_full_manuscript.py   # needs results/draft_figures/ from the first line
 
 # Or the single-file variant
 python3 FULL_PIPELINE.py          # requires data.xls in the working directory
@@ -54,7 +57,7 @@ python3 FULL_PIPELINE.py          # requires data.xls in the working directory
 
 ## What "reproduce" means here
 
-- Every number in the two HTML manuscripts is substituted at build time from a
+- Every number in the three HTML manuscripts is substituted at build time from a
   CSV in `results/` — nothing in the text is hand-typed.
 - Scripts read the selected K, sample N, duplicate counts, bootstrap count,
   and extended-K range **dynamically from the frozen result files**; no

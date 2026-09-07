@@ -22,6 +22,7 @@ Outputs:
     results/paper1_strengthening/   Sensitivity analyses
     paper1_final_manuscript.html    Submission-ready manuscript
     paper1_final_manuscript_k7.html K=7 manuscript variant
+    paper1_full_manuscript.html     Full-length manuscript (5 tables, 10 figures)
 """
 
 import os
@@ -67,6 +68,7 @@ SCRIPTS = [
     ("generate_figures_paper1.py", "Base64 figures for main manuscript"),
     ("build_paper1_manuscript.py", "Main manuscript (paper1_final_manuscript.html)"),
     ("build_k7_manuscript.py", "K=7 manuscript (paper1_final_manuscript_k7.html)"),
+    ("build_full_manuscript.py", "Full-length manuscript (paper1_full_manuscript.html)"),
 ]
 
 FAILED = []
