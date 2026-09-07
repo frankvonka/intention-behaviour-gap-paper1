@@ -1,0 +1,56 @@
+============================================================
+PHASE 16 — GAP PROFILE VALIDATION COMPLETE
+============================================================
+N = 1166, SEED = 42, N_INIT = 1000
+
+Gap variance decomposition:
+ K  between_profile_variance  within_profile_variance  total_variance  between_over_total
+ 2                  0.028898                 0.668765        0.697085            0.041455
+ 3                  0.234274                 0.463163        0.697085            0.336077
+ 4                  0.042526                 0.655897        0.697085            0.061005
+ 5                  0.103218                 0.595918        0.697085            0.148072
+ 6                  0.185182                 0.513411        0.697085            0.265651
+ 7                  0.233231                 0.466344        0.697085            0.334580
+
+Gap-only model (selected by min BIC, K=6):
+ K  log_likelihood         AIC         BIC  entropy  n_params  converged                      profile_sizes
+ 1    -1443.607636 2891.215272 2901.337941 0.000000         2       True                             [1166]
+ 2    -1440.373320 2890.746641 2916.053312 0.771938         5       True                        [130, 1036]
+ 3    -1417.493151 2850.986302 2891.476977 0.502910         8       True                    [635, 357, 174]
+ 4    -1401.126020 2824.252040 2879.926718 0.392328        11       True                [73, 445, 415, 233]
+ 5    -1383.158987 2794.317974 2865.176656 0.508762        14       True            [97, 329, 328, 345, 67]
+ 6    -1239.133822 2512.267645 2598.310329 0.342849        17       True       [319, 67, 175, 97, 329, 179]
+ 7    -1234.357385 2508.714769 2609.941456 0.265693        20       True [179, 151, 115, 209, 301, 36, 175]
+
+LEVEL-GAP Pearson r = -0.0000, p = 6.000000
+K=7 centroid distances from origin:
+ profile  centroid_distance_from_origin     z_INT      z_BE
+       0                       0.810427  0.754973  0.294630
+       1                       1.497551 -1.152958 -0.955692
+       2                       1.784107  0.775891  1.606559
+       3                       0.489114 -0.436981 -0.219727
+       4                       0.159728  0.142397  0.072362
+       5                       2.385335 -2.079665 -1.168253
+       6                       1.614243  1.449754  0.709926
+
+Outputs:
+  results/16_gap_profile_validation/profile_int_be_by_k.csv — OK
+  results/16_gap_profile_validation/gap_variability_by_profile.csv — OK
+  results/16_gap_profile_validation/gap_variance_decomposition.csv — OK
+  results/16_gap_profile_validation/pairwise_gap_separation.csv — OK
+  results/16_gap_profile_validation/gap_only_model_comparison.csv — OK
+  results/16_gap_profile_validation/gap_only_selected.csv — OK
+  results/16_gap_profile_validation/level_gap_relationship.csv — OK
+  results/16_gap_profile_validation/level_gap_correlation.csv — OK
+  results/16_gap_profile_validation/k6_centroid_geometry.csv — OK
+  results/16_gap_profile_validation/k6_centroid_distances.csv — OK
+  results/16_gap_profile_validation/k6_gap_variance_explained.csv — OK
+  results/16_gap_profile_validation/phase16_master.csv — OK
+  results/16_gap_profile_validation/README.md — OK
+  results/16_gap_profile_validation/gap_only_K1.csv — OK
+  results/16_gap_profile_validation/gap_only_K2.csv — OK
+  results/16_gap_profile_validation/gap_only_K3.csv — OK
+  results/16_gap_profile_validation/gap_only_K4.csv — OK
+  results/16_gap_profile_validation/gap_only_K5.csv — OK
+  results/16_gap_profile_validation/gap_only_K6.csv — OK
+  results/16_gap_profile_validation/gap_only_K7.csv — OK

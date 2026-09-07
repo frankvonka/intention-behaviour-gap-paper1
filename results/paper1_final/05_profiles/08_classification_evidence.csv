@@ -1,0 +1,16 @@
+metric,value
+mean_max_posterior,0.8916654620061683
+median_max_posterior,0.961813608195577
+SD_max_posterior,0.1429088476144716
+min_max_posterior,0.506539245138218
+max_max_posterior,0.99999999666586
+n_maxpost_ge_0.90,771.0
+n_maxpost_ge_0.80,878.0
+n_maxpost_ge_0.70,1036.0
+n_maxpost_lt_0.70,130.0
+n_maxpost_lt_0.50,0.0
+pct_maxpost_ge_0.90,66.12349914236707
+pct_maxpost_ge_0.80,75.30017152658662
+pct_maxpost_ge_0.70,88.8507718696398
+pct_maxpost_lt_0.70,11.149228130360203
+pct_maxpost_lt_0.50,0.0

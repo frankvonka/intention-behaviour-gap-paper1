@@ -1,0 +1,80 @@
+======================================================================
+A. GAP VARIANCE DECOMPOSITION (validate on K=6, compute K=2-7)
+======================================================================
+
+K=7 full-sample profile table (1-5 scale):
+ profile   N  percentage  INT_mean  BE_mean  INT_minus_BE  mean_z_INT  mean_z_BE  mean_GAP
+       0 281   24.099485  4.468565 4.010676      0.457888    0.754978   0.294524  0.460454
+       1 125   10.720412  2.896000 2.978000     -0.082000   -1.300926  -1.075003 -0.225923
+       2 108    9.262436  4.592593 5.000000     -0.407407    0.917127   1.606559 -0.689431
+       3 264   22.641509  3.523990 3.596591     -0.072601   -0.479919  -0.254632 -0.225286
+       4 245   21.012007  4.000000 3.831633      0.168367    0.142397   0.057078  0.085318
+       5  70    6.003431  2.114286 2.732143     -0.617857   -2.322907  -1.401057 -0.921849
+       6  73    6.260720  5.000000 4.092466      0.907534    1.449754   0.402993  1.046761
+ K  between_profile_variance  within_profile_variance  total_variance  between_over_total
+ 2                  0.028898                 0.668765        0.697085            0.041455
+ 3                  0.234274                 0.463163        0.697085            0.336077
+ 4                  0.042526                 0.655897        0.697085            0.061005
+ 5                  0.103218                 0.595918        0.697085            0.148072
+ 6                  0.185182                 0.513411        0.697085            0.265651
+ 7                  0.233231                 0.466344        0.697085            0.334580
+Validation K=6: {'computed': 0.2656514253638909, 'frozen': 0.2656514253638909, 'match': True}
+======================================================================
+B. PROFILE PREDICTORS (validate on K=6 vs frozen, compute K=7)
+======================================================================
+Validation K=6 predictors: {'n_rows_frozen': 65, 'n_rows_rerun': 65, 'match': True}
+K=7: n_tests=78, FDR significant=19, McFadden R2=0.2982, converged=True
+ profile predictor      beta        p_FDR       OR
+       1       ATT -0.683354 2.707201e-02 0.504921
+       1       SNO -1.636862 1.328305e-07 0.194590
+       1        PU -1.566073 1.802371e-06 0.208864
+       1       PEU -0.628646 1.112133e-02 0.533313
+       1       PRI -2.174047 1.835010e-12 0.113716
+       2        PU  1.796112 4.512164e-07 6.026172
+       2       PRI  2.005367 2.486949e-08 7.428821
+       3       SNO -1.123894 4.512164e-07 0.325012
+       3        PU -0.987456 1.684116e-05 0.372523
+       3       PEU -0.542681 6.110657e-04 0.581188
+       3       PRI -1.368939 2.087375e-09 0.254377
+       4       SNO -0.645112 4.939612e-03 0.524604
+       4       PRI -0.776879 3.070264e-04 0.459839
+       5       ATT -0.890254 2.843571e-02 0.410552
+       5       SNO -2.459771 5.301476e-09 0.085455
+       5        PU -2.597892 1.124830e-08 0.074430
+       5       PEU -0.919194 6.890385e-03 0.398840
+       5       PRI -2.079512 3.048282e-07 0.124991
+       6       PEU -0.508804 2.274464e-02 0.601214
+======================================================================
+C. DUPLICATE-ROW SENSITIVITY — K=7 refit on N=1124 unique sample
+======================================================================
+N_full=1166, duplicates removed=42, N_unique=1124
+                       metric                            frozen                      unique_sample                                  note
+                N_full_sample                              1166                               1166                              constant
+         n_duplicates_removed                                42                                 42                              constant
+              N_unique_sample                              1124                               1124                              constant
+             pearson_r_INT_BE                          0.651458                            0.65441                     sensitivity check
+                       gap_SD                          0.834916                           0.831372                     sensitivity check
+                pct_INT_gt_BE                         44.939966                          45.106762           sample-level, K-independent
+                pct_BE_gt_INT                         55.060034                          54.893238           sample-level, K-independent
+K7_log_likelihood_full_sample                       -663.254246                                NaN                             reference
+            K7_log_likelihood                       -663.254246                          -176.0801                       refit on N=1124
+                       K7_BIC                         1616.0232                          640.17081                       refit on N=1124
+                       K7_AIC                       1408.508491                         434.160199                       refit on N=1124
+                   K7_entropy                          0.099126                           0.123659                       refit on N=1124
+   K7_class_sizes_full_sample [281, 125, 108, 264, 245, 70, 73] [215, 180, 236, 104, 67, 159, 163]                       refit on N=1124
+               K7_min_class_N                                70                                 67                       refit on N=1124
+        K7_mean_max_posterior                          0.910539                            0.89303                       refit on N=1124
+                 K7_converged                              True                               True                                 refit
+   K7_hungarian_mean_distance                               0.0                           0.260744 z-space distance, refit vs frozen K=7
+
+Hungarian mapping (refit profile -> frozen profile): {0: 1, 1: 6, 2: 4, 3: 2, 4: 5, 5: 3, 6: 0}
+ profile  matched_frozen_profile   N  percentage  mean_INT  mean_BE  mean_z_INT  mean_z_BE  mean_GAP
+       0                       1 215   19.128114  3.062016 3.317442   -1.090804  -0.610678 -0.465924
+       1                       6 180   16.014235  4.801852 4.062500    1.182416   0.365613  0.816474
+       2                       4 236   20.996441  4.000000 3.827331    0.135833   0.069500  0.081955
+       3                       2 104    9.252669  4.612179 5.000000    0.970889   1.608862 -0.674179
+       4                       5  67    5.960854  2.203980 2.227612   -1.698637  -1.562537 -0.140461
+       5                       3 159   14.145907  3.639413 3.707547   -0.396614  -0.123858 -0.229749
+       6                       0 163   14.501779  4.333333 3.986196    0.570809   0.299440  0.306272
+
+All K=7-primary outputs written to results/k7_primary/

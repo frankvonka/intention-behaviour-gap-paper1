@@ -1,0 +1,16 @@
+check,expected,observed,difference,tolerance,status
+data_N_equals_1166,1166,1166.0,0.0,0.0,PASS
+data_no_missing,0,0.0,0.0,0.0,PASS
+data_item_range_min_1,1,1.0,0.0,0.0,PASS
+data_item_range_max_5,5,5.0,0.0,0.0,PASS
+INT_BE_correlation_significant,p<.001,8.832882449485395e-142,0.0,0.001,PASS
+gap_mean_approx_zero,0.0,-4.875078804528989e-16,4.875078804528989e-16,0.01,PASS
+gap_reproduces_phase03,0.0,0.0,0.0,1e-10,PASS
+primary_K7_minimum_BIC,7,7.0,0.0,0.0,PASS
+k_profile_sizes_sum_to_1166,1166,1166.0,0.0,0.0,PASS
+k_percentages_sum_100,100.0,100.0,0.0,0.01,PASS
+OR_equals_exp_beta,0.0,4.440892098500626e-16,4.440892098500626e-16,1e-10,PASS
+CI_lower_equals_exp_beta_minus_1_96_SE,0.0,4.440892098500626e-16,4.440892098500626e-16,1e-10,PASS
+CI_upper_equals_exp_beta_plus_1_96_SE,0.0,1.7763568394002505e-15,1.7763568394002505e-15,1e-10,PASS
+TOTAL_PASS,13,13.0,0.0,0.0,INFO
+TOTAL_FAIL,0,0.0,0.0,0.0,INFO

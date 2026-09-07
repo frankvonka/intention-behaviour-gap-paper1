@@ -112,14 +112,14 @@ def main():
     all_outputs["gap_summary.csv"] = True
 
     # ==================================================================
-    # 5. ALL LPA MODEL COMPARISONS
+    # 5. ALL LPA MODEL COMPARISONS (all K values present in phase 10/11 fit files)
     # ==================================================================
     fit = pd.read_csv(os.path.join(F10, "lpa_model_comparison", "model_fit.csv"))
     comp = pd.read_csv(os.path.join(F10, "selected_lpa", "model_comparison.csv"))
     unc = pd.read_csv(os.path.join(F11, "lpa_comparison.csv"))
 
     lpa_rows = []
-    for K in [2, 3, 4, 5, 6]:
+    for K in sorted(fit["K"].unique().tolist()):
         frow = fit[fit["K"] == K].iloc[0]
         urow = unc[unc["K"] == K].iloc[0]
         # Get profile sizes from per-K file (in Phase 04 results)
@@ -154,16 +154,19 @@ def main():
     )
     all_outputs["all_profile_structure.csv"] = True
 
+    # Selected K for the primary profile table (read from Phase 05)
+    K_sel = int(pd.read_csv("results/05_lpa_selection/selected_model.csv")["selected_K"].iloc[0])
+
     # ==================================================================
-    # 7. K=6 PRIMARY PROFILE TABLE
+    # 7. SELECTED-K PRIMARY PROFILE TABLE
     # ==================================================================
-    k6 = all_profile[all_profile["K"] == 6].copy()
+    k6 = all_profile[all_profile["K"] == K_sel].copy()
     k6_table = k6[["profile", "N", "percentage", "mean_INT", "mean_BE", "INT_minus_BE", "mean_GAP"]].copy()
     k6_table.to_csv(os.path.join(RESULTS_DIR, "k6_profile_table.csv"), index=False)
     all_outputs["k6_profile_table.csv"] = True
 
     # ==================================================================
-    # 8. PROFILE PREDICTORS (K=6)
+    # 8. PROFILE PREDICTORS (selected K)
     # ==================================================================
     coef = pd.read_csv(os.path.join(F10, "profile_predictors", "coefficients.csv"))
     or_df = pd.read_csv(os.path.join(F10, "profile_predictors", "odds_ratios.csv"))
@@ -197,8 +200,11 @@ def main():
     rob_rows = []
     # Random-start stability
     rss = pd.read_csv(os.path.join(F10, "robustness_results", "random_start_stability.csv"))
-    for K in [2, 3, 4, 5, 6]:
-        row = rss[rss["K"] == K].iloc[0]
+    for K in sorted(fit["K"].unique().tolist()):
+        sub = rss[rss["K"] == K]
+        if len(sub) == 0:
+            continue
+        row = sub.iloc[0]
         rob_rows.append({
             "check": "random_start_stability",
             "K": K,
@@ -238,8 +244,10 @@ def main():
         })
     # Random seed sensitivity
     rss2 = pd.read_csv(os.path.join(F10, "robustness_results", "random_seed_sensitivity.csv"))
-    for K in [2, 3, 4, 5, 6]:
+    for K in sorted(fit["K"].unique().tolist()):
         sub = rss2[rss2["K"] == K]
+        if len(sub) == 0:
+            continue
         rob_rows.append({
             "check": "random_seed_sensitivity",
             "K": K,
@@ -351,7 +359,7 @@ def main():
     })
 
     # LPA
-    for K in [2, 3, 4, 5, 6]:
+    for K in sorted(fit["K"].unique().tolist()):
         frow = fit[fit["K"] == K].iloc[0]
         master_rows.append({
             "category": "lpa",
@@ -366,22 +374,22 @@ def main():
             "file": "lpa_model_comparison.csv",
         })
 
-    # Selected K=6
+    # Selected K (read from results/05_lpa_selection/selected_model.csv)
     for _, row in k6_table.iterrows():
         master_rows.append({
-            "category": "k6_profile",
+            "category": "selected_K_profile",
             "key_result": f"profile_{int(row['profile'])}_INT",
             "value": float(row["mean_INT"]),
             "file": "k6_profile_table.csv",
         })
         master_rows.append({
-            "category": "k6_profile",
+            "category": "selected_K_profile",
             "key_result": f"profile_{int(row['profile'])}_BE",
             "value": float(row["mean_BE"]),
             "file": "k6_profile_table.csv",
         })
         master_rows.append({
-            "category": "k6_profile",
+            "category": "selected_K_profile",
             "key_result": f"profile_{int(row['profile'])}_GAP",
             "value": float(row["mean_GAP"]),
             "file": "k6_profile_table.csv",
@@ -448,12 +456,13 @@ clean machine-readable evidence package for Paper 1.
 - measurement_summary.csv — per-construct alpha, mean, SD
 - int_behavior_correlation.csv — INT-BE Pearson r, p, N, CI
 - gap_summary.csv — GAP statistics
-- lpa_model_comparison.csv — K=2..6 BIC, AIC, entropy, sizes
-- all_profile_structure.csv — profile structure for K=2..6
-- k6_profile_table.csv — K=6 primary profile table
+- lpa_model_comparison.csv — BIC, AIC, entropy, sizes for each estimated K
+- all_profile_structure.csv — profile structure for each estimated K
+- k6_profile_table.csv — selected-K primary profile table
+  (K read from results/05_lpa_selection/selected_model.csv)
 - k6_predictors.csv — multinomial logit (coefficients, OR, CI, FDR)
 - robustness_summary.csv — all robustness checks
-- k6_reproducibility.csv — K=6 reproduction verification
+- k6_reproducibility.csv — selected-K reproduction verification
 - factor_score_robustness.csv — factor vs mean correlations
 - paper1_master_evidence.csv — master evidence table
 """

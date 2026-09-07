@@ -1,0 +1,25 @@
+============================================================
+PHASE 08 — ROBUSTNESS CHECKS COMPLETE
+============================================================
+Selected K = 7
+Mean vs factor score r: INT=0.9999, BE=0.9981
+Outliers removed (|z|>3): 10
+
+Random-start stability (n_init=1000):
+ K  converged         BIC  entropy
+ 2       True 5932.853753 0.599786
+ 3       True 5906.631363 0.611082
+ 4       True 4657.054959 0.423645
+ 5       True 4633.418407 0.341625
+ 6       True 2129.173443 0.141850
+ 7       True 1616.023200 0.099126
+
+Key outputs:
+  results/08_robustness/random_start_stability.csv — OK
+  results/08_robustness/random_seed_sensitivity.csv — OK
+  results/08_robustness/covariance_sensitivity.csv — OK
+  results/08_robustness/score_sensitivity.csv — OK
+  results/08_robustness/score_sensitivity_lpa.csv — OK
+  results/08_robustness/classification_sensitivity.csv — OK
+  results/08_robustness/outlier_sensitivity.csv — OK
+  results/08_robustness/profile_stability.csv — OK

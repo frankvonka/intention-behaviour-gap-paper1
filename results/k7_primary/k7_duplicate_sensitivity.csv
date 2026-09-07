@@ -1,0 +1,18 @@
+metric,frozen,unique_sample,note
+N_full_sample,1166,1166,constant
+n_duplicates_removed,42,42,constant
+N_unique_sample,1124,1124,constant
+pearson_r_INT_BE,0.6514575831525611,0.6544102360906475,sensitivity check
+gap_SD,0.8349160638620378,0.8313720754383711,sensitivity check
+pct_INT_gt_BE,44.93996569468268,45.1067615658363,"sample-level, K-independent"
+pct_BE_gt_INT,55.06003430531733,54.893238434163706,"sample-level, K-independent"
+K7_log_likelihood_full_sample,-663.2542456066219,,reference
+K7_log_likelihood,-663.2542456066219,-176.08009967805745,refit on N=1124
+K7_BIC,1616.0232002565715,640.170809604714,refit on N=1124
+K7_AIC,1408.5084912132438,434.1601993561149,refit on N=1124
+K7_entropy,0.0991256569666002,0.12365877249606808,refit on N=1124
+K7_class_sizes_full_sample,"[281, 125, 108, 264, 245, 70, 73]","[215, 180, 236, 104, 67, 159, 163]",refit on N=1124
+K7_min_class_N,70,67,refit on N=1124
+K7_mean_max_posterior,0.9105387377029004,0.893029939789394,refit on N=1124
+K7_converged,True,True,refit
+K7_hungarian_mean_distance,0.0,0.2607443440391565,"z-space distance, refit vs frozen K=7"

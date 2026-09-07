@@ -12,13 +12,16 @@ Outputs:
     results/01_data_inspection/     Data quality reports
     results/02_measurement/         Construct scores and reliabilities
     results/03_gap_analysis/        GAP distribution statistics
-    results/04_lpa/                 LPA estimation (K=2..10)
-    results/05_profiles/            K=6 profile descriptives
-    results/06_predictors/          Multinomial logistic regression
-    results/07_robustness/          Alternative specification table
-    results/paper1_final/            Frozen evidence package
-    results/paper1_strengthening/    Sensitivity analyses
-    paper1_final_manuscript.html     Submission-ready manuscript
+    results/04_lpa_estimation/      LPA estimation (K=2..7; extended K=2..10 in Task 1)
+    results/05_lpa_selection/       BIC model selection (K=7 primary)
+    results/06_profile_analysis/    K=7 profile descriptives
+    results/07_profile_predictors/  Multinomial logistic regression
+    results/08_robustness/          Robustness analyses
+    results/k7_primary/             K=7-primary analyses (decomposition, predictors, dup refit)
+    results/paper1_final/           Frozen evidence package
+    results/paper1_strengthening/   Sensitivity analyses
+    paper1_final_manuscript.html    Submission-ready manuscript
+    paper1_final_manuscript_k7.html K=7 manuscript variant
 """
 
 import os
@@ -32,10 +35,10 @@ SCRIPTS = [
     ("01_data_inspection.py", "Phase 01 — Data inspection"),
     ("02_measurement.py", "Phase 02 — Measurement and construct scores"),
     ("03_gap_analysis.py", "Phase 03 — Intention–behaviour gap analysis"),
-    ("04_lpa_estimation.py", "Phase 04 — LPA estimation (K=2..10)"),
-    ("05_lpa_selection.py", "Phase 05 — LPA model selection"),
-    ("06_profile_analysis.py", "Phase 06 — Profile analysis"),
-    ("07_profile_predictors.py", "Phase 07 — Profile-membership predictors"),
+    ("04_lpa_estimation.py", "Phase 04 — LPA estimation (K=2..7)"),
+    ("05_lpa_selection.py", "Phase 05 — LPA model selection (BIC selects K=7)"),
+    ("06_profile_analysis.py", "Phase 06 — Profile analysis (K=7)"),
+    ("07_profile_predictors.py", "Phase 07 — Profile-membership predictors (K=7)"),
     ("08_robustness.py", "Phase 08 — Robustness analyses"),
     ("09_numerical_audit.py", "Phase 09 — Numerical audit"),
     ("10_final_results.py", "Phase 10 — Final results compilation"),
@@ -56,7 +59,14 @@ SCRIPTS = [
     ("24_task6_pearson_verify.py", "Task 6 — Pearson r verification"),
     ("25_task2_covariance_extended.py", "Task 2 — Covariance sensitivity (full vs diag)"),
     ("26_task3_duplicate_sensitivity.py", "Task 3 — Duplicate-row sensitivity"),
+    ("27_task7_k7_diagnostics_cv.py", "Task 7 — K=7 diagnostics + 5-fold CV (classification quality, stability, CV)"),
+    ("k7_primary_analyses.py", "K=7-primary analyses (gap decomposition, predictors, duplicate refit)"),
     ("build_master_evidence.py", "Master evidence compilation"),
+    ("fig_gen_paper1.py", "Publication figures 1-10 (results/paper1_final/figures/)"),
+    ("generate_draft_figures.py", "Draft figures for K=7 manuscript"),
+    ("generate_figures_paper1.py", "Base64 figures for main manuscript"),
+    ("build_paper1_manuscript.py", "Main manuscript (paper1_final_manuscript.html)"),
+    ("build_k7_manuscript.py", "K=7 manuscript (paper1_final_manuscript_k7.html)"),
 ]
 
 FAILED = []
@@ -79,7 +89,7 @@ for script_name, description in SCRIPTS:
     result = subprocess.run(
         [sys.executable, path],
         capture_output=False,
-        timeout=600,
+        timeout=3600,
     )
 
     if result.returncode != 0:
@@ -87,25 +97,6 @@ for script_name, description in SCRIPTS:
         print(f"[FAIL] {script_name} exited with code {result.returncode}")
     else:
         print(f"[OK]   {script_name}")
-
-# Generate figures and manuscript
-print(f"\n{'─' * 60}")
-print("Generating figures...")
-print(f"{'─' * 60}")
-result = subprocess.run([sys.executable, "scripts/generate_figures_paper1.py"])
-if result.returncode != 0:
-    FAILED.append("generate_figures_paper1.py")
-else:
-    print("[OK]   generate_figures_paper1.py")
-
-print(f"\n{'─' * 60}")
-print("Building manuscript...")
-print(f"{'─' * 60}")
-result = subprocess.run([sys.executable, "scripts/build_paper1_manuscript.py"])
-if result.returncode != 0:
-    FAILED.append("build_paper1_manuscript.py")
-else:
-    print("[OK]   build_paper1_manuscript.py")
 
 # Extract PNGs from base64
 print(f"\n{'─' * 60}")

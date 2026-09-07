@@ -1,0 +1,23 @@
+{
+  "validation": {
+    "K6_decomposition": {
+      "computed": 0.2656514253638909,
+      "frozen": 0.2656514253638909,
+      "match": true
+    },
+    "K6_predictors": {
+      "n_rows_frozen": 65,
+      "n_rows_rerun": 65,
+      "match": true
+    }
+  },
+  "outputs": [
+    "gap_variance_decomposition_K2_K7.csv",
+    "k7_per_profile_gap.csv",
+    "k7_predictors/multinomial_results.csv",
+    "k7_predictors/model_diagnostics.csv",
+    "k7_predictors/predictor_summary.csv",
+    "k7_duplicate_sensitivity.csv",
+    "k7_duplicate_sensitivity_profiles.csv"
+  ]
+}

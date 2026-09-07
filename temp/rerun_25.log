@@ -1,0 +1,66 @@
+cov= full K=2: conv=True, LL=-2927.59, AIC=5877.18, BIC=5932.85, entropy=0.5998, min_N=295
+cov= full K=3: conv=True, LL=-2893.29, AIC=5820.59, BIC=5906.63, entropy=0.6111, min_N=88
+cov= full K=4: conv=True, LL=-2247.32, AIC=4540.64, BIC=4657.05, entropy=0.4236, min_N=124
+cov= full K=5: conv=True, LL=-2214.32, AIC=4486.64, BIC=4633.42, entropy=0.3416, min_N=56
+cov= full K=6: conv=True, LL=-941.01, AIC=1952.03, BIC=2129.17, entropy=0.1418, min_N=54
+cov= full K=7: conv=True, LL=-663.25, AIC=1408.51, BIC=1616.02, entropy=0.0991, min_N=70
+cov= full K=8: conv=True, LL=2141.47, AIC=-4188.93, BIC=-3951.05, entropy=0.0185, min_N=68
+cov= full K=9: conv=True, LL=2160.47, AIC=-4214.94, BIC=-3946.69, entropy=0.0208, min_N=17
+cov= full K=10: conv=True, LL=2861.03, AIC=-5604.06, BIC=-5305.44, entropy=0.0003, min_N=10
+cov= diag K=2: conv=True, LL=-3044.67, AIC=6107.34, BIC=6152.89, entropy=0.3271, min_N=341
+cov= diag K=3: conv=True, LL=-2950.92, AIC=5929.84, BIC=6000.69, entropy=0.2919, min_N=179
+cov= diag K=4: conv=True, LL=-2283.28, AIC=4604.56, BIC=4700.72, entropy=0.1744, min_N=48
+cov= diag K=5: conv=True, LL=-1158.82, AIC=2365.64, BIC=2487.11, entropy=0.0522, min_N=105
+cov= diag K=6: conv=True, LL=-346.94, AIC=751.88, BIC=898.65, entropy=0.0322, min_N=101
+cov= diag K=7: conv=True, LL=-118.87, AIC=305.75, BIC=477.83, entropy=0.0421, min_N=35
+cov= diag K=8: conv=True, LL=1164.71, AIC=-2251.42, BIC=-2054.03, entropy=0.0255, min_N=64
+cov= diag K=9: conv=True, LL=2837.56, AIC=-5587.12, BIC=-5364.43, entropy=0.0001, min_N=43
+cov= diag K=10: conv=True, LL=2854.53, AIC=-5611.07, BIC=-5363.06, entropy=0.0001, min_N=3
+
+======================================================================
+TASK 2 — FULL vs DIAGONAL COVARIANCE K=2..10
+======================================================================
+BIC by (K, covariance_type):
+covariance_type     diag     full
+K                                
+2                6152.89  5932.85
+3                6000.69  5906.63
+4                4700.72  4657.05
+5                2487.11  4633.42
+6                 898.65  2129.17
+7                 477.83  1616.02
+8               -2054.03 -3951.05
+9               -5364.43 -3946.69
+10              -5363.06 -5305.44
+
+AIC by (K, covariance_type):
+covariance_type     diag     full
+K                                
+2                6107.34  5877.18
+3                5929.84  5820.59
+4                4604.56  4540.64
+5                2365.64  4486.64
+6                 751.88  1952.03
+7                 305.75  1408.51
+8               -2251.42 -4188.93
+9               -5587.12 -4214.94
+10              -5611.07 -5604.06
+
+log-likelihood by (K, covariance_type):
+covariance_type     diag     full
+K                                
+2               -3044.67 -2927.59
+3               -2950.92 -2893.29
+4               -2283.28 -2247.32
+5               -1158.82 -2214.32
+6                -346.94  -941.01
+7                -118.87  -663.25
+8                1164.71  2141.47
+9                2837.56  2160.47
+10               2854.53  2861.03
+
+Minimum BIC (full) at K = 10, BIC = -5305.44, min_class_N = 10
+
+Minimum BIC (diag) at K = 9, BIC = -5364.43, min_class_N = 43
+
+Saved: results/paper1_strengthening/covariance_k_extended.csv

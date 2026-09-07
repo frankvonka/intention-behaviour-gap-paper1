@@ -1,7 +1,8 @@
 """
-Phase 13 — K=6 Profile Validation
-====================================
-Validates the K=6 profile solution using existing posterior assignments
+Phase 13 — Selected-K Profile Validation
+===========================================
+Validates the selected LPA profile solution (K read from the Phase 05
+selection, previously hardcoded to 6) using existing posterior assignments
 and construct scores. No refitting, no literature, no interpretation.
 """
 import os
@@ -13,10 +14,14 @@ import pandas as pd
 # ---------------------------------------------------------------------------
 SCORES_PATH = "results/02_measurement/construct_scores.csv"
 PHASE04_DIR = "results/04_lpa_estimation"
+PHASE05_DIR = "results/05_lpa_selection"
 PHASE03_DIR = "results/03_gap_analysis"
 RESULTS_DIR = "results/13_k6_profile_validation"
 SEED = 42
-K = 6
+
+# Primary K read from the Phase 05 model selection (previously hardcoded to 6)
+_selected_model = pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))
+K = int(_selected_model["selected_K"].iloc[0])
 
 CONSTRUCTS = ["ATT", "CON", "SNO", "COVID", "INT", "BE", "PU", "PEU", "PO", "PRI"]
 
@@ -47,7 +52,7 @@ def main():
     scores = pd.read_csv(SCORES_PATH, index_col="respondent")
     N = scores.shape[0]
 
-    # K=6 posterior assignments
+    # Selected-K posterior assignments
     kdir = os.path.join(PHASE04_DIR, f"K_{K}")
     post_df = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
     labels = post_df["assigned_class"].values
@@ -63,7 +68,7 @@ def main():
     df["gap"] = gap_scores
 
     # ------------------------------------------------------------------
-    # 1. K=6 PROFILE DESCRIPTIVES
+    # 1. SELECTED-K PROFILE DESCRIPTIVES
     # ------------------------------------------------------------------
     desc_rows = []
     for p in range(K):
@@ -220,15 +225,15 @@ def main():
     # ------------------------------------------------------------------
     # README
     # ------------------------------------------------------------------
-    readme = """# Phase 13 — K=6 Profile Validation
+    readme = f"""# Phase 13 — K={K} Profile Validation
 
 ## Purpose
-Produce numerical evidence for later evaluation of the K=6 profile solution.
-No refitting. No literature. No interpretation. No plots.
+Produce numerical evidence for later evaluation of the K={K} profile solution
+(K selected in Phase 05). No refitting. No literature. No interpretation. No plots.
 
 ## Input Files
 - results/02_measurement/construct_scores.csv
-- results/04_lpa_estimation/K_6/posterior_probabilities.csv
+- results/04_lpa_estimation/K_{K}/posterior_probabilities.csv
 - results/03_gap_analysis/gap_scores.npy
 
 ## Calculations
@@ -256,7 +261,7 @@ All calculations read existing files. No new fitting. No dataset changes.
     # Report
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("PHASE 13 — K=6 PROFILE VALIDATION COMPLETE")
+    print(f"PHASE 13 — K={K} PROFILE VALIDATION COMPLETE")
     print("=" * 60)
     print(f"\nInputs: N={N}, K={K}")
     for fn in [

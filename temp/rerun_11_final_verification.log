@@ -1,0 +1,24 @@
+============================================================
+PHASE 11 — VERIFICATION COMPLETE
+============================================================
+
+Summary:
+                       check status                                                                notes
+audit_failure_identification   PASS                            1 failure(s) found; see audit_failure.csv
+              lpa_comparison   PASS                    K=2..7 comparison extracted from existing results
+           profile_structure   PASS                                Profile structure computed for K=2..7
+    gap_profile_verification   PASS   Numerical gap verification for K=2..7; no arbitrary labels applied
+    profile_size_diagnostics   PASS                          Size and uncertainty diagnostics for K=2..7
+     factor_score_robustness   PASS   sklearn FactorAnalysis used; factor scores compared to mean scores
+          k6_reproducibility   PASS K=7 reproducibility: LL match=True, BIC match=True, sizes match=True
+
+Outputs in results/11_final_verification:
+  results/11_final_verification/audit_failure.csv — OK
+  results/11_final_verification/lpa_comparison.csv — OK
+  results/11_final_verification/profile_structure.csv — OK
+  results/11_final_verification/gap_profile_check.csv — OK
+  results/11_final_verification/profile_size_diagnostics.csv — OK
+  results/11_final_verification/factor_vs_mean.csv — OK
+  results/11_final_verification/k6_reproduction.csv — OK
+  results/11_final_verification/verification_summary.csv — OK
+  results/11_final_verification/README.md — OK

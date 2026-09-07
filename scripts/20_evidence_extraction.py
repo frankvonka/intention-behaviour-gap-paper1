@@ -29,8 +29,8 @@ P18 = "results/18_profile_predictors"
 P18B = "results/18B_predictor_multicollinearity"
 P19 = "results/19_final_audit"
 
-K = 6
-N = 1166
+K = int(pd.read_csv(os.path.join(P05, "selected_model.csv"))["selected_K"].iloc[0])
+N = int(pd.read_csv("results/01_data_inspection/data_dimensions.csv")["N_rows"].iloc[0])
 
 
 def ensure_dir(d):
@@ -191,28 +191,28 @@ def main():
         })
     pd.DataFrame(lpa_rows).to_csv(
         os.path.join(RESULTS_DIR, "05_lpa_model_evidence.csv"), index=False)
-    add(matrix, "LPA-K6-BIC", "K=6 BIC", float(fit.loc[fit["K"] == 6, "BIC"].iloc[0]),
+    add(matrix, f"LPA-K{K}-BIC", f"K={K} BIC", float(fit.loc[fit["K"] == K, "BIC"].iloc[0]),
         "04", P04, "BIC_minimum", "nats", "VERIFIED")
-    add(matrix, "LPA-K6-AIC", "K=6 AIC", float(fit.loc[fit["K"] == 6, "AIC"].iloc[0]),
+    add(matrix, f"LPA-K{K}-AIC", f"K={K} AIC", float(fit.loc[fit["K"] == K, "AIC"].iloc[0]),
         "04", P04, "AIC", "nats", "VERIFIED")
-    add(matrix, "LPA-K6-LL", "K=6 log likelihood",
-        float(fit.loc[fit["K"] == 6, "log_likelihood"].iloc[0]),
+    add(matrix, f"LPA-K{K}-LL", f"K={K} log likelihood",
+        float(fit.loc[fit["K"] == K, "log_likelihood"].iloc[0]),
         "04", P04, "log_likelihood", "nats", "VERIFIED")
-    add(matrix, "LPA-K6-ENT", "K=6 classification entropy",
-        float(fit.loc[fit["K"] == 6, "entropy"].iloc[0]),
+    add(matrix, f"LPA-K{K}-ENT", f"K={K} classification entropy",
+        float(fit.loc[fit["K"] == K, "entropy"].iloc[0]),
         "04", P04, "entropy_normalized", "entropy_0_to_1", "VERIFIED")
     bic_min_K = int(fit.loc[fit["BIC"].idxmin(), "K"])
-    add(matrix, "LPA-BIC-MIN-K", "K with minimum BIC across K=2..6",
+    add(matrix, "LPA-BIC-MIN-K", "K with minimum BIC across estimated K values",
         bic_min_K, "05", P05, "argmin_BIC", "K", "VERIFIED")
 
     # ------------------------------------------------------------------
-    # 06. K6 PROFILE EVIDENCE
+    # 06. SELECTED-K PROFILE EVIDENCE
     # ------------------------------------------------------------------
     kdir = os.path.join(P04, f"K_{K}")
     post = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
     means = pd.read_csv(os.path.join(kdir, "profile_means.csv"))
     sizes = pd.read_csv(os.path.join(kdir, "profile_sizes.csv"))
-    prob_cols = [c for c in post.columns if c.startswith("prob_")]
+    prob_cols = [c for c in post.columns if c.startswith("post_profile_")]
     maxprob = post[prob_cols].max(axis=1).values
     labels = post["assigned_class"].values
     # profile_means is (K, 2) in order; confirm by checking alignment
@@ -234,15 +234,15 @@ def main():
         })
     pd.DataFrame(k6_rows).to_csv(
         os.path.join(RESULTS_DIR, "06_k6_profile_evidence.csv"), index=False)
-    add(matrix, "K6-SIZES", "K=6 profile sizes",
+    add(matrix, f"K{K}-SIZES", f"K={K} profile sizes",
         str([r["N"] for r in k6_rows]),
         "04", P04, "profile_N", "count", "VERIFIED")
     for r in k6_rows:
-        add(matrix, f"K6-P{int(r['profile'])}-INT", f"Profile {int(r['profile'])} INT mean",
+        add(matrix, f"K{K}-P{int(r['profile'])}-INT", f"Profile {int(r['profile'])} INT mean",
             float(r["INT_mean"]), "04", kdir, "profile_mean_z_INT", "z", "VERIFIED")
-        add(matrix, f"K6-P{int(r['profile'])}-BE", f"Profile {int(r['profile'])} BE mean",
+        add(matrix, f"K{K}-P{int(r['profile'])}-BE", f"Profile {int(r['profile'])} BE mean",
             float(r["BE_mean"]), "04", kdir, "profile_mean_z_BE", "z", "VERIFIED")
-        add(matrix, f"K6-P{int(r['profile'])}-DIFF",
+        add(matrix, f"K{K}-P{int(r['profile'])}-DIFF",
             f"Profile {int(r['profile'])} INT-BE",
             float(r["INT_minus_BE"]), "04", kdir, "INT_minus_BE", "z", "VERIFIED")
 
@@ -257,10 +257,10 @@ def main():
     lgr = pd.read_csv(os.path.join(P16, "level_gap_correlation.csv")).iloc[0]
 
     pg_rows = [
-        {"metric": "K6_between_over_total",
-         "value": float(gvd.loc[gvd["K"] == 6, "between_over_total"].iloc[0])},
-        {"metric": "K6_within_profile_variance_GAP",
-         "value": float(gvd.loc[gvd["K"] == 6, "within_profile_variance"].iloc[0])},
+        {"metric": f"K{K}_between_over_total",
+         "value": float(gvd.loc[gvd["K"] == K, "between_over_total"].iloc[0])},
+        {"metric": f"K{K}_within_profile_variance_GAP",
+         "value": float(gvd.loc[gvd["K"] == K, "within_profile_variance"].iloc[0])},
         {"metric": "gap_only_min_BIC_K", "value": go_bic_min_K},
         {"metric": "gap_only_min_BIC", "value": go_bic_min},
         {"metric": "LEVEL_GAP_corr_r",
@@ -270,9 +270,9 @@ def main():
     ]
     pd.DataFrame(pg_rows).to_csv(
         os.path.join(RESULTS_DIR, "07_profile_gap_evidence.csv"), index=False)
-    add(matrix, "PG-K6-BETWEEN",
-        "K=6 between-profile GAP variance proportion",
-        float(gvd.loc[gvd["K"] == 6, "between_over_total"].iloc[0]),
+    add(matrix, f"PG-K{K}-BETWEEN",
+        f"K={K} between-profile GAP variance proportion",
+        float(gvd.loc[gvd["K"] == K, "between_over_total"].iloc[0]),
         "16", P16, "between_over_total", "proportion_0_to_1", "VERIFIED")
     add(matrix, "PG-LEVEL-GAP-R", "LEVEL-GAP Pearson r",
         float(lgr["correlation_LEVEl_GAP_r"]), "16", P16,
@@ -342,8 +342,12 @@ def main():
         split = pd.read_csv(os.path.join(P14, "split_sample_results.csv"))
         stab_rows.append({"metric": "split_sample_n_halves",
                           "value": int(split["half"].nunique())})
+        # one row per profile per half; N = sum of `size` over both halves.
+        # (`n_respondents` is half-N repeated on each profile row; do NOT sum it.)
         stab_rows.append({"metric": "split_sample_n_respondents_total",
-                          "value": int(split["n_respondents"].sum())})
+                          "value": int(split["size"].sum())})
+        stab_rows.append({"metric": "split_sample_n_per_half",
+                          "value": int(split.groupby("half")["size"].sum().iloc[0])})
     except Exception:
         pass
     pd.DataFrame(stab_rows).to_csv(
@@ -441,20 +445,19 @@ def main():
     # ------------------------------------------------------------------
     # README
     # ------------------------------------------------------------------
-    readme = """# Phase 20 — Final Evidence Extraction
+    readme = f"""# Phase 20 — Final Evidence Extraction
 
 ## Purpose
 Extract already-frozen numerical evidence from Phases 1-19 into
 clean machine-readable tables. No new analysis, no model refit,
 no interpretation.
 
-## Frozen values preserved (examples)
-- N = 1166
-- INT-BE Pearson r = 0.6515
-- K = 6 (minimum BIC under primary specification)
-- K=6 BIC = 2129.1734
-- K=6 AIC = 1952.0267
-- K=6 profile sizes = [124, 377, 262, 90, 54, 259]
+## Frozen values preserved (examples, K={K})
+- N = {N}
+- INT-BE Pearson r = {float(intbe['r']):.4f}
+- K = {K} (minimum BIC among non-degenerate fits, per results/05_lpa_selection/selected_model.csv)
+- K={K} BIC = {float(fit.loc[fit['K'] == K, 'BIC'].iloc[0]):.4f} — from results/04_lpa_estimation/model_fit.csv
+- K={K} AIC = {float(fit.loc[fit['K'] == K, 'AIC'].iloc[0]):.4f} — from results/04_lpa_estimation/model_fit.csv
 
 ## Output Files
 - 01_dataset_evidence.csv

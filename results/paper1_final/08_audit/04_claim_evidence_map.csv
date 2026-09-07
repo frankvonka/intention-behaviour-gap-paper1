@@ -1,0 +1,25 @@
+claim_id,claim_text,evidence_phase,evidence_file,statistic,evidence_value
+C1,INT and BE are positively associated.,02,results/02_measurement,pearson_r,"r=0.6515, p<0.001 (exact p=8.83e-142)"
+C2,INT and BE show heterogeneous configurations across profiles.,04/06,results/04_lpa_estimation/K_7,profile_z_INT_z_BE,"profiles INT>BE = 3, profiles BE>INT = 4"
+C3,There are profiles with mean INT > mean BE.,04/06,results/04_lpa_estimation/K_7,n_profiles_INT_gt_BE,3
+C4,There are profiles with mean BE > mean INT.,04/06,results/04_lpa_estimation/K_7,n_profiles_BE_gt_INT,4
+C5,There is one universal intention-behavior gap.,04/06,results/04_lpa_estimation/K_7,profile_directions,"3 INT>BE, 4 BE>INT"
+C6,A distinct INT > BE profile exists.,04/06,results/04_lpa_estimation/K_7,n_profiles_INT_gt_BE,3
+C6b,Directional story rests on clearly-separated profiles (|z-gap|>=0.10).,04/06,results/04_lpa_estimation/K_7,substantive_direction_counts,"2 clear INT>BE, 4 clear BE>INT, 1 near-balanced(|z-gap|<0.10)"
+C7,All 7 profiles are equally stable.,14,results/14_k6_stability,stability_pct_spread,87.0
+C8,Profile 4 has stable INT-BE direction across bootstraps.,14,results/14_k6_stability,configuration_stability_pct,56.49999999999999
+C9,K=7 is the minimum-BIC solution among the estimated K values.,04/05,results/04_lpa_estimation,min_BIC_K_windowed_2_to_7,7
+C9b,BIC keeps falling for K>7 under variance-collapse degeneracy.,Task1,results/paper1_strengthening,BIC_K10_vs_K7,"K10_BIC=-5305.44 < K7_BIC=1616.02; floor_flags=[False, False, True, True, True, True, True, True, True]"
+C10,K=7 is perfectly stable across all alternative specifications.,17,results/17_alternative_model_validation,max_matching_distance,3.336491821534614
+C11,Profile membership predictors are causal.,18,results/18_profile_predictors,study_design,cross-sectional
+C12,The predictor coefficients are unaffected by multicollinearity.,18B,results/18B_predictor_multicollinearity,max_construct_VIF_cond_num,"VIF=67.44, cond=18.40"
+C13,The data support heterogeneity in the intention-behavior relationship.,04/06/16,results/16_gap_profile_validation,between_over_total_K7,0.3345799583661564
+C14,The results establish temporal causality.,study_design,data.xls,design,cross-sectional
+C15,K=7 reproduces with its specific primary BIC value (1616.0232).,19,results/19_final_audit,K7_BIC_reproduced,1616.0232002565715
+C16,K=7 profile sizes sum to N = 1166.,19,results/19_final_audit,sum_profile_N,1166
+C17,INT-BE 95% CI excludes 0.,02,results/02_measurement,INT_BE_CI95,"[0.6171, 0.6833]"
+C18,All bootstrap replications of K=7 converged.,14,results/14_k6_stability,bootstrap_converged,200/200
+C19,MNLogit predictor model converged.,18,results/18_profile_predictors,converged,1
+C20,INT-BE relationship is uniformly positive across all K=7 profiles.,04/06,results/04_lpa_estimation/K_7,profile_diffs,P0=0.4603; P1=-0.1973; P2=-0.8307; P3=-0.2173; P4=0.0700; P5=-0.9114; P6=0.7398
+C21,Predictor VIF range is within recommended bounds (<5).,18B,results/18B_predictor_multicollinearity,max_VIF,67.44221815766522
+C22,INT-BE Pearson r magnitude is >= 0.5.,02,results/02_measurement,abs_pearson_r,0.6514575831525611

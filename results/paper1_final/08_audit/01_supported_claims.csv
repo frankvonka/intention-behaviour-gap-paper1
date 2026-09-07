@@ -1,0 +1,13 @@
+claim_id,claim_text,evidence_phase,evidence_file,statistic,evidence_value,status,reason_for_status
+C1,INT and BE are positively associated.,02,results/02_measurement,pearson_r,"r=0.6515, p<0.001 (exact p=8.83e-142)",SUPPORTED,"Pearson r > 0 with p < 0.001 reported in Phase 02. Report as p<0.001 in manuscripts; the exact tiny value is a floating-point artifact, not a meaningful precision."
+C2,INT and BE show heterogeneous configurations across profiles.,04/06,results/04_lpa_estimation/K_7,profile_z_INT_z_BE,"profiles INT>BE = 3, profiles BE>INT = 4",SUPPORTED,At least one profile has mean z_INT > z_BE and at least one has mean z_BE > z_INT.
+C3,There are profiles with mean INT > mean BE.,04/06,results/04_lpa_estimation/K_7,n_profiles_INT_gt_BE,3,SUPPORTED,Phase 04/06 reports 3 profile(s) with mean z_INT > z_BE.
+C4,There are profiles with mean BE > mean INT.,04/06,results/04_lpa_estimation/K_7,n_profiles_BE_gt_INT,4,SUPPORTED,Phase 04/06 reports 4 profile(s) with mean z_BE > z_INT.
+C6,A distinct INT > BE profile exists.,04/06,results/04_lpa_estimation/K_7,n_profiles_INT_gt_BE,3,SUPPORTED,3 profile(s) show mean INT > mean BE.
+C9,K=7 is the minimum-BIC solution among the estimated K values.,04/05,results/04_lpa_estimation,min_BIC_K_windowed_2_to_7,7,SUPPORTED,Minimum BIC across K=2..7 is at K=7 (BIC=1616.0232).
+C15,K=7 reproduces with its specific primary BIC value (1616.0232).,19,results/19_final_audit,K7_BIC_reproduced,1616.0232002565715,SUPPORTED,Phase 19 audit reproduces K=7 BIC = 1616.0232.
+C16,K=7 profile sizes sum to N = 1166.,19,results/19_final_audit,sum_profile_N,1166,SUPPORTED,Sum of profile sizes = 1166 = N.
+C17,INT-BE 95% CI excludes 0.,02,results/02_measurement,INT_BE_CI95,"[0.6171, 0.6833]",SUPPORTED,Lower bound > 0; CI excludes 0.
+C18,All bootstrap replications of K=7 converged.,14,results/14_k6_stability,bootstrap_converged,200/200,SUPPORTED,All 200 bootstrap replications converged.
+C19,MNLogit predictor model converged.,18,results/18_profile_predictors,converged,1,SUPPORTED,Phase 18 reports converged = True.
+C22,INT-BE Pearson r magnitude is >= 0.5.,02,results/02_measurement,abs_pearson_r,0.6514575831525611,SUPPORTED,|r| = 0.6515 >= 0.5.

@@ -1,0 +1,19 @@
+============================================================
+PHASE 21 — PAPER TABLE DATA COMPLETE
+============================================================
+  results/21_paper_tables/01_sample_table.csv — OK
+  results/21_paper_tables/02_measurement_table.csv — OK
+  results/21_paper_tables/03_correlation_table.csv — OK
+  results/21_paper_tables/03_correlation_summary.csv — OK
+  results/21_paper_tables/04_lpa_comparison_table.csv — OK
+  results/21_paper_tables/05_k6_profile_table.csv — OK
+  results/21_paper_tables/06_profile_gap_table.csv — OK
+  results/21_paper_tables/06_profile_gap_supplement.csv — OK
+  results/21_paper_tables/07_classification_table.csv — OK
+  results/21_paper_tables/08_stability_table.csv — OK
+  results/21_paper_tables/09_predictor_table.csv — OK
+  results/21_paper_tables/09_predictor_per_predictor.csv — OK
+  results/21_paper_tables/10_robustness_table.csv — OK
+  results/21_paper_tables/10_robustness_supplement.csv — OK
+  results/21_paper_tables/11_master_paper_tables.csv — OK
+  results/21_paper_tables/README.md — OK

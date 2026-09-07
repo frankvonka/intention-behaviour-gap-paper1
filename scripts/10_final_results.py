@@ -148,7 +148,7 @@ All values are recalculated from `data.xls`; no historical results were hard-cod
 - **K = {K_sel}** profiles (selected by minimum BIC, verified in Phase 05)
 - Covariance: full
 - Indicators: z_INT, z_BE (standardized across respondents)
-- N = 1166 respondents
+- N = {int(pd.read_csv('results/01_data_inspection/data_dimensions.csv')['N_rows'].iloc[0])} respondents
 - Random seed = 42, n_init = 1000
 
 ### File Organization

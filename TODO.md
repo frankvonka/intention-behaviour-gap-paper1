@@ -1,84 +1,85 @@
-# Project TODO
+# 19-PHASE COMPUTATIONAL ANALYSIS (10-22)
+## Intention–Behaviour Gap in Household Energy-Saving Behaviour
 
-Intention–Behaviour Gap in Household Energy-Saving Behaviour
+[x] Phase 01 — Data inspection
+[x] Phase 02 — Measurement
+[x] Phase 03 — Intention-behaviour gap
+[x] Phase 04 — LPA estimation
+[x] Phase 05 — LPA selection
+[x] Phase 06 — Profile characterization
+[x] Phase 07 — Profile predictors
+[x] Phase 08 — Robustness
+[x] Phase 09 — Numerical audit
+[x] Phase 10 — Final frozen results
+[x] Phase 11 — Post-verification
+[x] Phase 12 — Paper 1 evidence package
+[x] Phase 13 — K=6 profile validation
+[x] Phase 14 — K=6 profile stability
+[x] Phase 15 — K=2 to K=6 profile structure comparison
+[x] Phase 16 — Gap profile validation
+[x] Phase 17 — Alternative model validation
+[x] Phase 18 — Profile predictor analysis
+[x] Phase 18B — Predictor multicollinearity audit
+[x] Phase 19 — Final numerical audit and results freeze
+    CHECKS: PASS — 13/13 numerical checks PASS
+[x] Phase 20 — Final evidence extraction
+[x] Phase 21 — Final paper table data
+[x] Phase 22 — Final claim audit
+    CHECKS: 12 SUPPORTED, 2 CAVETED, 8 NOT_SUPPORTED
+[x] Phases 20-22 — FINAL EVIDENCE PACKAGING
+    STATUS: COMPLETE
 
-## Phases
+---
 
-- [x] Phase 01 — Data inspection
-- [ ] Phase 02 — Measurement
-- [ ] Phase 03 — Gap analysis
-- [ ] Phase 04 — LPA estimation
-- [ ] Phase 05 — LPA selection
-- [ ] Phase 06 — Profile analysis
-- [ ] Phase 07 — Profile predictors
-- [ ] Phase 08 — Robustness analysis
-- [ ] Phase 09 — Numerical audit
-- [ ] Phase 10 — Final frozen results
+# PAPER 1 — REMAINING HUMAN TASKS
 
-## Phase 01 — Data Inspection
+The computational evidence is frozen and organized in
+`results/paper1_final/`. The following tasks require human
+research input and CANNOT be completed by the computation agent.
 
-- Status: COMPLETED
-- Script: scripts/01_data_inspection.py
-- Results: results/01_data_inspection/
-- Commit: phase 01: data inspection
-- Verified:
-  - N = 1166
-  - 34 columns
-  - 0 missing values
-  - 42 duplicate rows
-  - All psychometric items 1-5
-  - Demographics: gender (0/1), age (17-71), Education (1-4), Occupation (1-7), income (1-4)
+## REQUIRED BY HUMAN
 
-## Phase 02 — Measurement
+1. **Literature review & citation insertion**
+   - Every [LITERATURE SUPPORT NEEDED] placeholder in the draft
+     requires a search of the relevant literature and insertion
+     of proper citations.
+   - No literature search was performed by the agent.
 
-- Status: PENDING
-- Script: scripts/02_measurement.py
-- Results: results/02_measurement/
+2. **Theoretical framing**
+   - Every [INTERPRETATION REQUIRES REVIEW] marker identifies an
+     interpretation that cannot be supported by numerical evidence
+     alone and requires theoretical validation by the research team.
+   - The Theory of Planned Behaviour is named in the draft but is
+     NOT cited and [METHOD DETAIL NEEDS CONFIRMATION] markers remain.
 
-## Phase 03 — Gap Analysis
+3. **Final interpretation**
+   - Draft Section 14 (Discussion), 15 (Theoretical Contribution),
+     and 16 (Practical Implications) contain reserved interpretations
+     that must be reviewed and confirmed by the research team.
 
-- Status: PENDING
-- Script: scripts/03_gap_analysis.py
-- Results: results/03_gap_analysis/
+4. **Figures / tables**
+   - No figures or plots were created (per constraint).
+   - Journal formatting, table numbering, and figure placement
+     are deferred to the human author.
 
-## Phase 04 — LPA Estimation
+5. **Methodological confirmation**
+   - [METHOD DETAIL NEEDS CONFIRMATION] markers indicate points where
+     the exact published methodological citation is missing from the
+     frozen results and must be confirmed by the human researcher.
 
-- Status: PENDING
-- Script: scripts/04_lpa_estimation.py
-- Results: results/04_lpa_estimation/
+6. **Unsupported claims verification**
+   - Review the 8 NOT_SUPPORTED claims in
+     `08_audit/03_unsupported_claims.csv`.
+   - Ensure none are presented as findings in the final paper.
 
-## Phase 05 — LPA Selection
+## VERIFICATION CHECKLIST (for human review)
 
-- Status: PENDING
-- Script: scripts/05_lpa_selection.py
-- Results: results/05_lpa_selection/
-
-## Phase 06 — Profile Analysis
-
-- Status: PENDING
-- Script: scripts/06_profile_analysis.py
-- Results: results/06_profile_analysis/
-
-## Phase 07 — Profile Predictors
-
-- Status: PENDING
-- Script: scripts/07_profile_predictors.py
-- Results: results/07_profile_predictors/
-
-## Phase 08 — Robustness Analysis
-
-- Status: PENDING
-- Script: scripts/08_robustness.py
-- Results: results/08_robustness/
-
-## Phase 09 — Numerical Audit
-
-- Status: PENDING
-- Script: scripts/09_numerical_audit.py
-- Results: results/09_numerical_audit/
-
-## Phase 10 — Final Frozen Results
-
-- Status: PENDING
-- Script: N/A
-- Results: results/10_final/
+Before submission:
+- [ ] All [LITERATURE SUPPORT NEEDED] markers resolved
+- [ ] All [INTERPRETATION REQUIRES REVIEW] markers validated
+- [ ] All [METHOD DETAIL NEEDS CONFIRMATION] markers resolved
+- [ ] All 8 NOT_SUPPORTED claims (Phase 22) excluded from findings
+- [ ] The 2 CAVETATED claims (Phase 22) retain their caveats:
+    - C8: Profile 5 direction-stability = 48% (low; not robust)
+    - C13: Between-profile GAP variance = 26.6% (substantial within variance)
+- [ ] All numerical values traceable to `09_master/paper1_master_evidence.csv`

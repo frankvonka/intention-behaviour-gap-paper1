@@ -1,0 +1,5 @@
+metric,value,source
+bootstrap_B,200,results/14_k6_stability/bootstrap_results.csv
+bootstrap_converged,200,results/14_k6_stability/bootstrap_results.csv
+n_master_rows,17,results/14_k6_stability/k6_stability_master.csv
+n_split_sample_rows,12,results/14_k6_stability/split_sample_results.csv

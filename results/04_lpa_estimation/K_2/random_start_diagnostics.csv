@@ -1,0 +1,7 @@
+metric,value
+converged,True
+n_init_requested,1000
+n_iter_used,7
+best_log_likelihood,-2927.589537432892
+BIC,5932.8537529017985
+random_seed,42

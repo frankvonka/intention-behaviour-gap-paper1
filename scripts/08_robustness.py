@@ -30,7 +30,10 @@ PHASE05_DIR = "results/05_lpa_selection"
 RESULTS_DIR = "results/08_robustness"
 SEED = 42
 
-K_RANGE = [2, 3, 4, 5, 6]
+# K range follows the fitted models in Phase 04 (K=2..7 after the primary-
+# solution switch); read dynamically so future K extensions propagate.
+import pandas as _pd
+K_RANGE = sorted(_pd.read_csv(os.path.join(PHASE04_DIR, "model_fit.csv"))["K"].unique().tolist())
 COVARIANCE_TYPES = ["full", "diag", "spherical"]
 INDICATORS = ["z_INT", "z_BE"]
 
@@ -46,7 +49,7 @@ def safe_entropy(posterior):
     if log_k == 0:
         return 0.0
     total = np.sum(p * np.log(p))
-    return float(1.0 - total / (n * log_k))
+    return float(-total / (n * log_k))
 
 
 def count_params(K, n_features, cov_type):

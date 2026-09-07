@@ -1,0 +1,16 @@
+metric,value
+sample_size,1166.0
+n_outcome_classes,7.0
+reference_profile,0.0
+n_predictors,13.0
+n_tests,78.0
+log_likelihood,-1480.326532132418
+log_likelihood_null,-2109.4717892040244
+AIC,3128.653064264836
+BIC,3553.8051510853124
+McFadden_pseudo_R2,0.2982477700301479
+converged,1.0
+n_missing_predictor_values,0.0
+max_VIF,67.44221815766522
+condition_number_design_with_const_UNSCALED_DO_NOT_COMPARE,270.9790660966388
+n_FDR_significant,19.0

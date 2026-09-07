@@ -20,8 +20,9 @@ PHASE04_DIR = "results/04_lpa_estimation"
 DATA_PATH = "data.xls"
 RESULTS_DIR = "results/18B_predictor_multicollinearity"
 PHASE18_DIR = "results/18_profile_predictors"
+PHASE05_DIR = "results/05_lpa_selection"
 
-K = 6
+K = int(pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))["selected_K"].iloc[0])
 REFERENCE_PROFILE = 0
 ALPHA_FDR = 0.05
 HIGH_CORR_THRESHOLD = 0.70
@@ -115,7 +116,7 @@ def main():
     raw = pd.read_excel(DATA_PATH, sheet_name=0).copy()
     N = scores.shape[0]
 
-    # Frozen K=6 classification
+    # Frozen selected-K classification
     kdir = os.path.join(PHASE04_DIR, f"K_{K}")
     post_df = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
     labels = post_df["assigned_class"].values
@@ -345,7 +346,8 @@ the one-at-a-time leave-out diagnostics specified.
    leave-one-out vs standardized
 
 ## Models
-- Outcome: frozen K=6 profile membership
+- Outcome: frozen K={K} profile membership (minimum BIC among non-degenerate
+  fits, per results/05_lpa_selection/selected_model.csv)
 - Reference: Profile {REFERENCE_PROFILE}
 - Estimator: statsmodels MNLogit, BFGS, maxiter=1000
 - Predictors (primary, 13): {PREDICTORS}

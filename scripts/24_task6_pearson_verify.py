@@ -1,11 +1,13 @@
 """
 Reviewer-fix pass — Task 6: Verify the frozen INT–BE Pearson r with scipy.stats.pearsonr.
 
-Frozen values (results/paper1_final/int_be_correlation.csv / Phase 02):
-  r = 0.651458, p = 8.83e-142, N = 1166, 95% CI = [0.6171, 0.6833]
+Frozen values are LOADED from results/02_measurement/int_be_correlation.csv
+(Phase 02 output: columns r, p, N, CI95_lower, CI95_upper) — no hardcoded numbers.
 
 This script recomputes r and p directly from data.xls and reports them
 side by side with the frozen values so the match/mismatch is explicit.
+
+This script has no K dependence (it verifies the correlation only, not the LPA).
 """
 import os
 import numpy as np
@@ -14,13 +16,13 @@ from scipy import stats
 
 DATA_PATH = "data.xls"
 SCORES_PATH = "results/02_measurement/construct_scores.csv"
+FROZEN_CSV = "results/02_measurement/int_be_correlation.csv"
 OUT = "results/paper1_strengthening/pearson_verification.csv"
 SEED = 42
 CONSTRUCTS = {
     "INT": ["INT1", "INT2", "INT3"],
     "BE": ["BE1", "BE2", "BE3", "BE4"],
 }
-FROZEN = {"r": 0.651458, "p": 8.83e-142, "N": 1166, "ci_lo": 0.6171, "ci_hi": 0.6833}
 
 
 def cronbach_alpha(items: pd.DataFrame) -> float:
@@ -38,6 +40,16 @@ def cronbach_alpha(items: pd.DataFrame) -> float:
 def main():
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     np.random.seed(SEED)
+
+    # ---- Frozen values, LOADED from the Phase 02 result file (no literals) ----
+    _fz = pd.read_csv(FROZEN_CSV).iloc[0]
+    FROZEN = {
+        "r": float(_fz["r"]),
+        "p": float(_fz["p"]),
+        "N": int(_fz["N"]),
+        "ci_lo": float(_fz["CI95_lower"]),
+        "ci_hi": float(_fz["CI95_upper"]),
+    }
 
     df = pd.read_excel(DATA_PATH, sheet_name=0).copy()
     N_data = df.shape[0]
@@ -131,7 +143,8 @@ def main():
     # Explicit verdict
     ok = out.dropna(subset=["r"]).loc[out["source"] == "saved_construct_scores", "match_frozen"]
     if bool(ok.iloc[0]):
-        print("VERDICT: FROZEN r=0.651458, p=8.83e-142, CI[0.6171,0.6833] — VERIFIED (recomputed matches).")
+        print(f"VERDICT: FROZEN r={FROZEN['r']:.6f}, p={FROZEN['p']:.3e}, "
+              f"CI[{FROZEN['ci_lo']:.4f},{FROZEN['ci_hi']:.4f}] — VERIFIED (recomputed matches).")
     else:
         print("VERDICT: MISMATCH — investigate.")
 

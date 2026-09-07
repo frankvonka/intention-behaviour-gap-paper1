@@ -1,0 +1,35 @@
+phase,file,purpose,verified
+01,results/01_data_inspection/data_dimensions.csv,Dataset dimensions,True
+01,results/01_data_inspection/missing_values.csv,Missing-value summary,True
+01,results/01_data_inspection/duplicate_information.csv,Duplicate row summary,True
+01,results/01_data_inspection/item_ranges.csv,Psychometric item ranges,True
+02,results/02_measurement/construct_scores.csv,Construct mean scores,True
+02,results/02_measurement/construct_statistics.csv,Construct mean/SD,True
+02,results/02_measurement/cronbach_alpha.csv,Cronbach alpha per construct,True
+02,results/02_measurement/int_be_correlation.csv,INT-BE correlation,True
+03,results/03_gap_analysis/gap_scores.npy,Respondent-level GAP,True
+03,results/03_gap_analysis/gap_statistics.csv,GAP descriptive stats,True
+04,results/04_lpa_estimation/model_fit.csv,K=2..6 model fit comparison,True
+04,results/04_lpa_estimation/K_6/posterior_probabilities.csv,K=6 posteriors,True
+04,results/04_lpa_estimation/K_6/profile_means.csv,"K=6 profile means (z_INT, z_BE)",True
+04,results/04_lpa_estimation/K_6/profile_sizes.csv,K=6 profile sizes,True
+05,results/05_lpa_selection/selected_model.csv,Selected K (minimum BIC),True
+06,results/06_profile_analysis/,Profile characterization,True
+07,results/07_profile_predictors/fdr_results.csv,Phase 7 predictor FDR results,True
+08,results/08_robustness/,Robustness checks,True
+09,results/09_numerical_audit/,Numerical audit,True
+10,results/10_final/,Phase 10 final results,True
+11,results/11_final_verification/,Phase 11 verification,True
+12,results/12_paper1_evidence/,Phase 12 paper-1 evidence,True
+13,results/13_k6_profile_validation/k6_classification_quality.csv,Classification quality,True
+14,results/14_k6_stability/bootstrap_results.csv,Bootstrap stability,True
+14,results/14_k6_stability/split_sample_results.csv,Split-sample validation,True
+15,results/15_profile_structure_comparison/all_k_profile_structure.csv,K=2..6 structure,True
+16,results/16_gap_profile_validation/gap_variance_decomposition.csv,Gap variance decomp,True
+16,results/16_gap_profile_validation/gap_only_model_comparison.csv,Gap-only GMM,True
+16,results/16_gap_profile_validation/level_gap_correlation.csv,LEVEL-GAP r,True
+17,results/17_alternative_model_validation/phase17_master.csv,Alt-model master,True
+18,results/18_profile_predictors/multinomial_results.csv,Primary MNLogit results,True
+18,results/18_profile_predictors/phase18_master.csv,Phase 18 master,True
+18B,results/18B_predictor_multicollinearity/phase18B_master.csv,Phase 18B master,True
+18B,results/18B_predictor_multicollinearity/vif_full.csv,VIF per predictor,True

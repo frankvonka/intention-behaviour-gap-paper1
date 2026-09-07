@@ -1,0 +1,9 @@
+claim_id,claim_text,evidence_phase,evidence_file,statistic,evidence_value,status,reason_for_status
+C5,There is one universal intention-behavior gap.,04/06,results/04_lpa_estimation/K_7,profile_directions,"3 INT>BE, 4 BE>INT",NOT_SUPPORTED,Multiple directional profiles exist; no single universal direction.
+C7,All 7 profiles are equally stable.,14,results/14_k6_stability,stability_pct_spread,87.0,NOT_SUPPORTED,Stability proportions vary by 87.00 percentage points; profiles are not equally stable.
+C10,K=7 is perfectly stable across all alternative specifications.,17,results/17_alternative_model_validation,max_matching_distance,3.336491821534614,NOT_SUPPORTED,Maximum matching distance = 3.3365 (non-zero).
+C11,Profile membership predictors are causal.,18,results/18_profile_predictors,study_design,cross-sectional,NOT_SUPPORTED,Cross-sectional MNLogit cannot establish causality from observational data.
+C12,The predictor coefficients are unaffected by multicollinearity.,18B,results/18B_predictor_multicollinearity,max_construct_VIF_cond_num,"VIF=67.44, cond=18.40",NOT_SUPPORTED,Construct VIF reaches 67.44; condition number = 18.40. Coefficients are likely affected.
+C14,The results establish temporal causality.,study_design,data.xls,design,cross-sectional,NOT_SUPPORTED,Cross-sectional data cannot establish temporal causality.
+C20,INT-BE relationship is uniformly positive across all K=7 profiles.,04/06,results/04_lpa_estimation/K_7,profile_diffs,P0=0.4603; P1=-0.1973; P2=-0.8307; P3=-0.2173; P4=0.0700; P5=-0.9114; P6=0.7398,NOT_SUPPORTED,Some profiles show mean BE > mean INT.
+C21,Predictor VIF range is within recommended bounds (<5).,18B,results/18B_predictor_multicollinearity,max_VIF,67.44221815766522,NOT_SUPPORTED,Max VIF = 67.44 exceeds 5.

@@ -37,7 +37,7 @@ def safe_entropy(posterior):
     log_k = np.log(K)
     if log_k == 0:
         return 0.0
-    return float(1.0 - np.sum(p * np.log(p)) / (n * log_k))
+    return float(-np.sum(p * np.log(p)) / (n * log_k))
 
 
 def count_params(cov_type, K, n_features):

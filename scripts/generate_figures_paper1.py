@@ -44,6 +44,25 @@ plt.rcParams.update({
 OUTPUT_DIR = "results/paper1_final/figures"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# --- Dynamic solution constants (read from frozen evidence, no hardcoded K/N) ---
+SEL = int(pd.read_csv(
+    "results/05_lpa_selection/selected_model.csv")["selected_K"].iloc[0])
+_kext_all = pd.read_csv(
+    "results/paper1_strengthening/k_extended_model_comparison.csv")
+_kext_full = _kext_all[_kext_all.covariance_type == 'full']
+_KMIN_EXT, _KMAX_EXT = int(_kext_full.K.min()), int(_kext_full.K.max())
+_wb = _kext_full[_kext_full.log_likelihood < 0]   # numerically well-behaved fits
+_deg_ks = sorted(int(k) for k in _kext_full.loc[_kext_full.log_likelihood > 0, "K"])
+DEG_K_MIN = min(_deg_ks) if _deg_ks else None
+N_TOTAL = int(pd.read_csv(
+    "results/01_data_inspection/data_dimensions.csv")["N_rows"].iloc[0])
+_dupinfo = pd.read_csv("results/01_data_inspection/duplicate_information.csv")
+N_DUPS = int(_dupinfo.loc[_dupinfo["check"] == "all_columns",
+                          "n_duplicates"].iloc[0])
+N_UNIQ = N_TOTAL - N_DUPS
+_bootm = pd.read_csv("results/14_k6_stability/k6_stability_master.csv")
+N_BOOT = int(dict(zip(_bootm.metric, _bootm.value))["n_bootstrap"])
+
 
 def fig_to_base64(fig):
     buf = io.BytesIO()
@@ -123,10 +142,11 @@ def generate_figure2():
 
 
 # ============================================================
-# FIGURE 3: INT vs BE profile structure (K = 7)
+# FIGURE 3: INT vs BE profile structure (primary K)
 # ============================================================
 def generate_figure3():
-    profiles = pd.read_csv("results/paper1_strengthening/task1_K_7/profile_parameters.csv")
+    profiles = pd.read_csv(
+        f"results/paper1_strengthening/task1_K_{SEL}/profile_parameters.csv")
 
     fig, ax = plt.subplots(figsize=SINGLE)
 
@@ -152,7 +172,7 @@ def generate_figure3():
 
     ax.set_xlabel('Mean z(Intention)')
     ax.set_ylabel('Mean z(Behaviour)')
-    ax.set_title('Seven-Profile Solution (K = 7): INT vs BE Means')
+    ax.set_title(f'{SEL}-Profile Solution (K = {SEL}): INT vs BE Means')
     ax.set_xlim(lim_min, lim_max)
     ax.set_ylim(lim_min, lim_max)
     ax.set_aspect('equal', adjustable='box')
@@ -162,14 +182,15 @@ def generate_figure3():
 
 
 # ============================================================
-# FIGURE 4: Profile INT and BE means (K = 7)
+# FIGURE 4: Profile INT and BE means (primary K)
 # ============================================================
 def generate_figure4():
-    profiles = pd.read_csv("results/paper1_strengthening/task1_K_7/profile_parameters.csv")
+    profiles = pd.read_csv(
+        f"results/paper1_strengthening/task1_K_{SEL}/profile_parameters.csv")
 
     fig, ax = plt.subplots(figsize=WIDE)
 
-    x = np.arange(7)
+    x = np.arange(SEL)
     width = 0.35
 
     ax.bar(x - width/2, profiles['mean_z_INT'], width, label='z(Intention)',
@@ -179,9 +200,9 @@ def generate_figure4():
 
     ax.set_xlabel('Profile')
     ax.set_ylabel('Mean z-score')
-    ax.set_title('Profile-Specific z(Intention) and z(Behaviour) Means (K = 7)')
+    ax.set_title(f'Profile-Specific z(Intention) and z(Behaviour) Means (K = {SEL})')
     ax.set_xticks(x)
-    ax.set_xticklabels([f'P{i}' for i in range(7)])
+    ax.set_xticklabels([f'P{i}' for i in range(SEL)])
     ax.legend(loc='upper right', framealpha=0.9)
 
     plt.tight_layout()
@@ -189,7 +210,7 @@ def generate_figure4():
 
 
 # ============================================================
-# FIGURE 5: BIC across K = 2–10
+# FIGURE 5: BIC across the extended K range
 # ============================================================
 def generate_figure5():
     k_ext = pd.read_csv("results/paper1_strengthening/k_extended_model_comparison.csv")
@@ -204,19 +225,19 @@ def generate_figure5():
     if len(diag) > 0:
         ax.plot(diag['K'], diag['BIC'], 's--', color='#DD8452', lw=2, markersize=8, label='Diagonal covariance')
 
-    k7 = full[full['K'] == 7]
-    ax.scatter(k7['K'], k7['BIC'], s=200, facecolors='none', edgecolors='#F39C12',
-               linewidths=3, zorder=5, label='K=7 (lowest BIC)')
+    k_sel_row = full[full['K'] == SEL]
+    ax.scatter(k_sel_row['K'], k_sel_row['BIC'], s=200, facecolors='none', edgecolors='#F39C12',
+               linewidths=3, zorder=5, label=f'K={SEL} (lowest well-behaved BIC)')
 
-    k_degen = full[full['K'] >= 8]
-    if len(k_degen) > 0:
-        ax.axvspan(7.5, 10.5, alpha=0.1, color='red', label='K≥8: numerical degeneracy')
+    if DEG_K_MIN is not None:
+        ax.axvspan(DEG_K_MIN - 0.5, _KMAX_EXT + 0.5, alpha=0.1, color='red',
+                   label=f'K>={DEG_K_MIN}: numerical degeneracy')
 
     ax.set_xlabel('Number of profiles (K)')
     ax.set_ylabel('BIC')
-    ax.set_title('BIC Across K = 2–10 (Full Covariance)')
+    ax.set_title(f'BIC Across K = {_KMIN_EXT}–{_KMAX_EXT} (Full Covariance)')
     ax.legend(loc='lower left', framealpha=0.9)
-    ax.set_xticks(range(2, 11))
+    ax.set_xticks(range(_KMIN_EXT, _KMAX_EXT + 1))
 
     plt.tight_layout()
     return fig_to_base64(fig)
@@ -240,22 +261,24 @@ def generate_figure6():
     ax.set_ylabel('BIC')
     ax.set_title('Covariance Specification Sensitivity: BIC by K')
     ax.legend(loc='upper right', framealpha=0.9)
-    ax.set_xticks(range(2, 11))
+    ax.set_xticks(range(int(cov_ext['K'].min()), int(cov_ext['K'].max()) + 1))
 
     plt.tight_layout()
     return fig_to_base64(fig)
 
 
 # ============================================================
-# FIGURE 7: Classification quality (K = 7)
+# FIGURE 7: Classification quality (primary K)
 # ============================================================
 def generate_figure7():
-    class_qual = pd.read_csv("results/paper1_strengthening/k7_classification_quality.csv")
+    class_qual = pd.read_csv(
+        f"results/paper1_strengthening/k{SEL}_classification_quality.csv")
 
     def cq(name):
         return float(class_qual.loc[class_qual['statistic'] == name, 'value'].values[0])
 
-    post = pd.read_csv("results/paper1_strengthening/k7_posterior_probabilities.csv")
+    post = pd.read_csv(
+        f"results/paper1_strengthening/k{SEL}_posterior_probabilities.csv")
     max_post = post[[c for c in post.columns if c.startswith('post_profile_')]].max(axis=1)
 
     fig, ax = plt.subplots(figsize=SINGLE)
@@ -272,7 +295,7 @@ def generate_figure7():
 
     ax.set_xlabel('Maximum posterior probability')
     ax.set_ylabel('Number of respondents')
-    ax.set_title('Classification Quality: Maximum Posterior Distribution (K = 7)')
+    ax.set_title(f'Classification Quality: Maximum Posterior Distribution (K = {SEL})')
     ax.legend(loc='upper left', framealpha=0.9)
 
     plt.tight_layout()
@@ -280,17 +303,19 @@ def generate_figure7():
 
 
 # ============================================================
-# FIGURE 8: Profile stability (K = 7)
+# FIGURE 8: Profile stability (primary K)
 # ============================================================
 def generate_figure8():
-    config_stab = pd.read_csv("results/paper1_strengthening/k7_stability.csv")
+    config_stab = pd.read_csv(
+        f"results/paper1_strengthening/k{SEL}_stability.csv")
 
     fig, ax = plt.subplots(figsize=SINGLE)
 
-    x = np.arange(7)
+    x = np.arange(SEL)
     width = 0.35
 
-    colors = ['#E74C3C' if p == 5 else ('#27AE60' if p >= 80 else '#F39C12')
+    # Colour by the observed directional-consistency value (legend thresholds)
+    colors = ['#27AE60' if p >= 80 else ('#E74C3C' if p < 50 else '#F39C12')
               for p in config_stab['pct_INT_gt_BE']]
 
     bars = ax.bar(x, config_stab['pct_INT_gt_BE'], width,
@@ -301,9 +326,9 @@ def generate_figure8():
 
     ax.set_xlabel('Profile')
     ax.set_ylabel('% INT > BE across bootstraps')
-    ax.set_title('Bootstrap Directional Stability (200 Replications, K = 7)')
+    ax.set_title(f'Bootstrap Directional Stability ({N_BOOT} Replications, K = {SEL})')
     ax.set_xticks(x)
-    ax.set_xticklabels([f'P{i}' for i in range(7)])
+    ax.set_xticklabels([f'P{i}' for i in range(SEL)])
     ax.set_ylim(0, 105)
 
     legend_elements = [
@@ -318,52 +343,62 @@ def generate_figure8():
 
 
 # ============================================================
-# FIGURE 9: Duplicate-row sensitivity for K = 7 (N = 1166 vs N = 1124)
+# FIGURE 9: Duplicate-row sensitivity for the primary K
 # ============================================================
 def generate_figure9():
-    # K=7 duplicate sensitivity from verification
+    # Duplicate sensitivity — read both columns from the primary-K sensitivity file
+    ct = pd.read_csv(
+        f"results/k{SEL}_primary/k{SEL}_duplicate_sensitivity.csv").set_index("metric")
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(14, 4.8))
 
     width = 0.35
+    lab_prim = f'Primary (N={N_TOTAL})'
+    lab_uniq = f'Duplicates removed (N={N_UNIQ})'
 
-    # Panel A: Pearson r + GAP SD (both ~0.8)
+    # Panel A: Pearson r + GAP SD
     labels_a = ['Pearson r', 'GAP SD']
-    frozen_a = np.array([0.651458, 0.834916])
-    unique_a = np.array([0.654410, 0.832201])
+    frozen_a = np.array([float(ct.loc["pearson_r_INT_BE", "frozen"]),
+                         float(ct.loc["gap_SD", "frozen"])])
+    unique_a = np.array([float(ct.loc["pearson_r_INT_BE", "unique_sample"]),
+                         float(ct.loc["gap_SD", "unique_sample"])])
     x = np.arange(len(labels_a))
-    ax1.bar(x - width/2, frozen_a, width, label='Primary (N=1166)',
+    ax1.bar(x - width/2, frozen_a, width, label=lab_prim,
             color='#4C72B0', edgecolor='k', linewidth=0.5)
-    ax1.bar(x + width/2, unique_a, width, label='Duplicates removed (N=1124)',
+    ax1.bar(x + width/2, unique_a, width, label=lab_uniq,
             color='#DD8452', edgecolor='k', linewidth=0.5)
     ax1.set_xticks(x)
     ax1.set_xticklabels(labels_a)
 
     # Panel B: Entropy + Mean max posterior
     labels_b = ['Entropy', 'Mean max post.']
-    frozen_b = np.array([0.0991, 0.9105])
-    unique_b = np.array([0.0436, 0.9708])
+    frozen_b = np.array([float(ct.loc[f"K{SEL}_entropy", "frozen"]),
+                         float(ct.loc[f"K{SEL}_mean_max_posterior", "frozen"])])
+    unique_b = np.array([float(ct.loc[f"K{SEL}_entropy", "unique_sample"]),
+                         float(ct.loc[f"K{SEL}_mean_max_posterior", "unique_sample"])])
     x = np.arange(len(labels_b))
-    ax2.bar(x - width/2, frozen_b, width, label='Primary (N=1166)',
+    ax2.bar(x - width/2, frozen_b, width, label=lab_prim,
             color='#4C72B0', edgecolor='k', linewidth=0.5)
-    ax2.bar(x + width/2, unique_b, width, label='Duplicates removed (N=1124)',
+    ax2.bar(x + width/2, unique_b, width, label=lab_uniq,
             color='#DD8452', edgecolor='k', linewidth=0.5)
     ax2.set_xticks(x)
     ax2.set_xticklabels(labels_b)
 
     # Panel C: BIC + LL (large magnitude)
-    labels_c = ['K=7 BIC', 'K=7 LL']
-    frozen_c = np.array([1616.02, -663.25])
-    unique_c = np.array([857.03, -284.51])
+    labels_c = [f'K={SEL} BIC', f'K={SEL} LL']
+    frozen_c = np.array([float(ct.loc[f"K{SEL}_BIC", "frozen"]),
+                         float(ct.loc[f"K{SEL}_log_likelihood", "frozen"])])
+    unique_c = np.array([float(ct.loc[f"K{SEL}_BIC", "unique_sample"]),
+                         float(ct.loc[f"K{SEL}_log_likelihood", "unique_sample"])])
     x = np.arange(len(labels_c))
-    ax3.bar(x - width/2, frozen_c, width, label='Primary (N=1166)',
+    ax3.bar(x - width/2, frozen_c, width, label=lab_prim,
             color='#4C72B0', edgecolor='k', linewidth=0.5)
-    ax3.bar(x + width/2, unique_c, width, label='Duplicates removed (N=1124)',
+    ax3.bar(x + width/2, unique_c, width, label=lab_uniq,
             color='#DD8452', edgecolor='k', linewidth=0.5)
     ax3.set_xticks(x)
     ax3.set_xticklabels(labels_c)
     ax3.legend(loc='upper right', framealpha=0.9)
 
-    fig.suptitle('Model Fit Metrics K = 7', fontsize=12, fontweight='600', y=1.02)
+    fig.suptitle(f'Model Fit Metrics K = {SEL}', fontsize=12, fontweight='600', y=1.02)
     plt.tight_layout()
     return fig_to_base64(fig)
 
@@ -373,6 +408,10 @@ def generate_figure9():
 # ============================================================
 def generate_figure10():
     cv_agg = pd.read_csv("results/paper1_strengthening/cv5_aggregated_by_k.csv")
+    cv_agg['K'] = cv_agg['K'].astype(int)
+    sel_k = int(pd.read_csv("results/05_lpa_selection/selected_model.csv")["selected_K"].iloc[0])
+    kmin = int(cv_agg['K'].min())
+    kmax = int(cv_agg['K'].max())
 
     fig, ax = plt.subplots(figsize=SINGLE)
 
@@ -380,21 +419,25 @@ def generate_figure10():
                 fmt='o-', color='#4C72B0', lw=2, markersize=8, capsize=5,
                 label='Mean held-out log-likelihood (±SD)')
 
-    k6 = cv_agg[cv_agg['K'] == 6]
-    ax.scatter(k6['K'], k6['mean_ll_test'], s=200, facecolors='none', edgecolors='#E74C3C',
-               linewidths=3, zorder=5, label='K=6 (primary, highest mean LL)')
+    # Circle the BIC-selected primary K and, if different, the best held-out LL K
+    k_sel = cv_agg[cv_agg['K'] == sel_k]
+    ax.scatter(k_sel['K'], k_sel['mean_ll_test'], s=200, facecolors='none', edgecolors='#E74C3C',
+               linewidths=3, zorder=5, label=f'K={sel_k} (primary, BIC-selected)')
 
-    k7 = cv_agg[cv_agg['K'] == 7]
-    if len(k7) > 0:
-        ax.scatter(k7['K'], k7['mean_ll_test'], s=200, facecolors='none',
+    best_k = int(cv_agg.loc[cv_agg['mean_ll_test'].idxmax(), 'K'])
+    if best_k != sel_k:
+        k_best = cv_agg[cv_agg['K'] == best_k]
+        ax.scatter(k_best['K'], k_best['mean_ll_test'], s=200, facecolors='none',
                    edgecolors='#F39C12', linewidths=3, zorder=5,
-                   label='K=7 (lower held-out LL, high variance)')
+                   label=f'K={best_k} (highest mean held-out LL)')
+    else:
+        ax.scatter([], [], s=0, label=f'K={sel_k} also has the highest mean held-out LL')
 
     ax.set_xlabel('Number of profiles (K)')
     ax.set_ylabel('Held-out log-likelihood')
-    ax.set_title('Five-Fold Cross-Validation: Held-Out Log-Likelihood by K = 2…7')
+    ax.set_title(f'Five-Fold Cross-Validation: Held-Out Log-Likelihood by K = {kmin}…{kmax}')
     ax.legend(loc='lower right', framealpha=0.9)
-    ax.set_xticks(range(2, 8))
+    ax.set_xticks(range(int(cv_agg['K'].min()), kmax + 1))
 
     plt.tight_layout()
     return fig_to_base64(fig)
@@ -420,7 +463,7 @@ def main():
     print("  Figure 4: Profile INT/BE means...")
     figures['fig4'] = generate_figure4()
 
-    print("  Figure 5: Extended K=2–10 BIC...")
+    print(f"  Figure 5: Extended K={_KMIN_EXT}–{_KMAX_EXT} BIC...")
     figures['fig5'] = generate_figure5()
 
     print("  Figure 6: Covariance sensitivity...")

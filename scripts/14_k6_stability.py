@@ -1,10 +1,11 @@
 """
-Phase 14 — K=6 Profile Stability
-==================================
-Tests whether the K=6 profile structure is stable under bootstrap
+Phase 14 — Selected-K Profile Stability
+=========================================
+Tests whether the selected-LPA profile structure (K read from the Phase 05
+selection, previously hardcoded to 6) is stable under bootstrap
 resampling and split-sample analysis.
 
-Same K=6 specification as the primary analysis:
+Same specification as the primary analysis:
 - indicators: z_INT, z_BE (standardized within sample)
 - covariance_type = "full"
 - n_init = 1000
@@ -23,11 +24,14 @@ from sklearn.mixture import GaussianMixture
 # ---------------------------------------------------------------------------
 SCORES_PATH = "results/02_measurement/construct_scores.csv"
 PHASE04_DIR = "results/04_lpa_estimation"
+PHASE05_DIR = "results/05_lpa_selection"
 RESULTS_DIR = "results/14_k6_stability"
 
-K = 6
+# Primary K read from the Phase 05 model selection (previously hardcoded to 6)
+_selected_model = pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))
+K = int(_selected_model["selected_K"].iloc[0])
 COVARIANCE_TYPE = "full"
-N_INIT_PRIMARY = 1000  # primary K=6 reference fit
+N_INIT_PRIMARY = 1000  # primary selected-K reference fit
 N_INIT_BOOTSTRAP = 100  # bootstrap fits (computationally feasible for B=200)
 SEED = 42
 B = 200  # bootstrap samples
@@ -51,11 +55,12 @@ def safe_entropy(posterior):
     log_k = np.log(Kk)
     if log_k == 0:
         return 0.0
-    return float(1.0 - np.sum(p * np.log(p)) / (n * log_k))
+    return float(-np.sum(p * np.log(p)) / (n * log_k))
 
 
 def fit_k6(X, seed, n_init=N_INIT_BOOTSTRAP):
-    """Fit K=6 full-covariance GMM on standardized indicators X."""
+    """Fit the selected-K (primary) full-covariance GMM on standardized
+    indicators X. Function name kept for continuity (previously K=6)."""
     gmm = GaussianMixture(
         n_components=K,
         covariance_type=COVARIANCE_TYPE,
@@ -117,7 +122,7 @@ def main():
     z_BE = (BE - BE.mean()) / BE.std(ddof=1)
     X_full = np.column_stack([z_INT, z_BE])
 
-    # Original K=6 fit (same settings) — reference (use full n_init=1000)
+    # Original selected-K fit (same settings) — reference (use full n_init=1000)
     ref = fit_k6(X_full, SEED, n_init=N_INIT_PRIMARY)
     ref_means = ref["means"]
 
@@ -332,11 +337,12 @@ def main():
     # ------------------------------------------------------------------
     # README
     # ------------------------------------------------------------------
-    readme = f"""# Phase 14 — K=6 Profile Stability
+    readme = f"""# Phase 14 — K={K} Profile Stability
 
 ## Purpose
-Test stability of the K=6 profile structure under bootstrap resampling
-and split-sample analysis. No K re-selection, no interpretation.
+Test stability of the K={K} profile structure (K selected in Phase 05)
+under bootstrap resampling and split-sample analysis. No K re-selection,
+no interpretation.
 
 ## Bootstrap Procedure
 - B = {B} bootstrap samples
@@ -350,7 +356,7 @@ and split-sample analysis. No K re-selection, no interpretation.
   matched profile means
 
 ## Profile Matching
-- Bootstrap profiles matched to original K=6 profiles by minimum
+- Bootstrap profiles matched to original K={K} profiles by minimum
   Euclidean distance on the 2D vector (mean z_INT, mean z_BE)
 - One-to-one assignment via the Hungarian algorithm
   (scipy.optimize.linear_sum_assignment)
@@ -359,7 +365,7 @@ and split-sample analysis. No K re-selection, no interpretation.
 ## Split-Sample Procedure
 - Fixed seed = {SPLIT_SEED}; random permutation split into halves
   (n = {len(idx1)} and {len(idx2)})
-- Same K=6 model fitted independently to each half
+- Same K={K} model fitted independently to each half
 - Profiles matched between halves by the same minimum-distance method
 
 ## Boundary Diagnostics
@@ -377,7 +383,7 @@ and split-sample analysis. No K re-selection, no interpretation.
 - k6_stability_master.csv — key stability metrics
 
 ## No Modifications
-Primary K=6 results untouched. No dataset changes. No plots.
+Primary K={K} results untouched. No dataset changes. No plots.
 """
     with open(os.path.join(RESULTS_DIR, "README.md"), "w") as f:
         f.write(readme)
@@ -386,7 +392,7 @@ Primary K=6 results untouched. No dataset changes. No plots.
     # Report
     # ------------------------------------------------------------------
     print("=" * 60)
-    print("PHASE 14 — K=6 STABILITY COMPLETE")
+    print(f"PHASE 14 — K={K} STABILITY COMPLETE")
     print("=" * 60)
     print(f"B = {B}, successful = {n_success}")
     print(f"Original: LL = {ref['LL']:.2f}, BIC = {ref['BIC']:.2f}")

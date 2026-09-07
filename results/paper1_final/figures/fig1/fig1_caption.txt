@@ -1,0 +1,1 @@
+Figure 1. Aggregate association between self-reported household energy-saving intention and behaviour (N = 1,166). Pearson r = 0.6515 (95% CI [0.6171, 0.6833], p = 8.83e-142). The strong aggregate association does not imply uniform individual alignment; the dotted diagonal represents perfect alignment.

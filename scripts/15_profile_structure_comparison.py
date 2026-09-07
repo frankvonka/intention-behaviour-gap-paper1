@@ -1,7 +1,8 @@
 """
-Phase 15 — K=2 to K=6 Profile Structure Comparison
-=====================================================
-Numerically compares the existing K=2..K=6 solutions.
+Phase 15 — Profile Structure Comparison (K=2 .. selected K)
+=============================================================
+Numerically compares the existing K solutions from Phase 04 (dynamically
+read from model_fit.csv; previously hardcoded K=2..K=6).
 Descriptive/computational only. No K selection, no labels, no
 interpretation, no plots, no literature.
 """
@@ -16,7 +17,11 @@ SCORES_PATH = "results/02_measurement/construct_scores.csv"
 PHASE04_DIR = "results/04_lpa_estimation"
 RESULTS_DIR = "results/15_profile_structure_comparison"
 
-K_RANGE = [2, 3, 4, 5, 6]
+# K values read dynamically from the Phase 04 fit summary
+# (previously hardcoded [2, 3, 4, 5, 6])
+K_RANGE = sorted(
+    pd.read_csv(os.path.join(PHASE04_DIR, "model_fit.csv"))["K"].unique().tolist()
+)
 CONSTRUCTS = ["ATT", "CON", "SNO", "COVID", "INT", "BE", "PU", "PEU", "PO", "PRI"]
 
 
@@ -93,7 +98,10 @@ def main():
         return np.array(rows)  # (K, 10)
 
     split_rows = []
-    for K_low, K_high in [(2, 3), (3, 4), (4, 5), (5, 6)]:
+    # Consecutive-K pairs derived dynamically from K_RANGE
+    # (previously hardcoded [(2, 3), (3, 4), (4, 5), (5, 6)])
+    consecutive_pairs = list(zip(K_RANGE[:-1], K_RANGE[1:]))
+    for K_low, K_high in consecutive_pairs:
         means_low = std_profile_means(labels_by_k[K_low], K_low)
         means_high = std_profile_means(labels_by_k[K_high], K_high)
         # For each high-K profile, nearest low-K profile (Euclidean)
@@ -228,10 +236,11 @@ def main():
     # ------------------------------------------------------------------
     # README
     # ------------------------------------------------------------------
-    readme = """# Phase 15 — K=2 to K=6 Profile Structure Comparison
+    readme = f"""# Phase 15 — Profile Structure Comparison (K={K_RANGE[0]} to K={K_RANGE[-1]})
 
 ## Purpose
-Numerically compare the existing K=2..K=6 solutions. Descriptive and
+Numerically compare the existing K={K_RANGE[0]}..K={K_RANGE[-1]} solutions
+(dynamically read from Phase 04 model_fit.csv). Descriptive and
 computational only. No K selection, no profile labels, no interpretation.
 
 ## Input Result Files

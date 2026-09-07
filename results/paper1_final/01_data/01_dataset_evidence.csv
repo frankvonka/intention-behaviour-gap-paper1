@@ -1,0 +1,7 @@
+metric,value,source
+N,1166,results/01_data_inspection
+n_columns,34,results/01_data_inspection
+total_missing_values,0,results/01_data_inspection
+duplicate_rows,42,results/01_data_inspection
+psychometric_item_min,1,results/01_data_inspection
+psychometric_item_max,5,results/01_data_inspection

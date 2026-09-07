@@ -1,0 +1,14 @@
+metric,value,source
+N,1166.0,results/18_profile_predictors/phase18_master.csv
+K_frozen,6.0,results/18_profile_predictors/phase18_master.csv
+reference_profile,0.0,results/18_profile_predictors/phase18_master.csv
+n_predictors,13.0,results/18_profile_predictors/phase18_master.csv
+n_tests,65.0,results/18_profile_predictors/phase18_master.csv
+log_likelihood,-1309.941088922808,results/18_profile_predictors/phase18_master.csv
+AIC,2759.882177845616,results/18_profile_predictors/phase18_master.csv
+BIC,3114.1755835293466,results/18_profile_predictors/phase18_master.csv
+McFadden_pseudo_R2,0.3035309702796983,results/18_profile_predictors/phase18_master.csv
+n_FDR_significant,21.0,results/18_profile_predictors/phase18_master.csv
+OR_max_abs_diff_vs_exp_beta,2.220446049250313e-16,results/18_profile_predictors/multinomial_results.csv
+CI_lower_max_abs_diff,2.220446049250313e-16,results/18_profile_predictors/multinomial_results.csv
+CI_upper_max_abs_diff,3.552713678800501e-15,results/18_profile_predictors/multinomial_results.csv

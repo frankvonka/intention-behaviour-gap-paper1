@@ -29,7 +29,9 @@ P18 = "results/18_profile_predictors"
 P18B = "results/18B_predictor_multicollinearity"
 
 RESULTS_DIR = "results/19_final_audit"
-K = 6
+P05 = "results/05_lpa_selection"
+PHASE05_DIR = "results/05_lpa_selection"
+K = int(pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))["selected_K"].iloc[0])
 
 CONSTRUCT_ITEMS = {
     "ATT": ["ATT1", "ATT2", "ATT3"],
@@ -98,7 +100,7 @@ def main():
     measurement_rows = []
     gap_rows = []
     lpa_rows = []
-    k6_rows = []
+    profile_rows = []
     class_rows = []
     stability_rows = []
     structure_rows = []
@@ -122,15 +124,17 @@ def main():
     dup_n = int(raw.duplicated().sum())
     data_rows.append({"metric": "duplicate_rows", "value": dup_n})
 
-    # Item ranges — for all items 1-5
+    # Item ranges — psychometric Likert items only (1-5). Demographics
+    # (gender 0/1, age 17-71, Education 1-4, Occupation 1-7, income 1-4)
+    # live on different scales and must NOT be range-checked against 1-5.
+    item_cols_all = sorted({i for v in CONSTRUCT_ITEMS.values() for i in v})
     out_of_range = 0
-    for col in raw.columns:
-        if col == "respondent":
-            continue
+    for col in item_cols_all:
         s = pd.to_numeric(raw[col], errors="coerce")
         oor = int(((s < 1) | (s > 5)).sum())
         out_of_range += oor
-    data_rows.append({"metric": "out_of_range_item_values", "value": out_of_range})
+    data_rows.append({"metric": "out_of_range_psychometric_item_values", "value": out_of_range})
+    data_rows.append({"metric": "out_of_range_item_values_DEPRECATED", "value": out_of_range})
 
     # Likert range rows
     item_cols = sorted({i for v in CONSTRUCT_ITEMS.values() for i in v})
@@ -231,11 +235,11 @@ def main():
         })
     pd.DataFrame(fit_rows).to_csv(
         os.path.join(RESULTS_DIR, "lpa_model_audit.csv"), index=False)
-    add_check(checks, "primary_K6_minimum_BIC_K2_to_K6",
+    add_check(checks, f"primary_K{K}_minimum_BIC",
               K, bic_min_K, 0, "PASS" if bic_min_K == K else "FAIL")
 
     # ------------------------------------------------------------------
-    # 5. PRIMARY K=6 PROFILE AUDIT
+    # 5. PRIMARY K={K} PROFILE AUDIT
     # ------------------------------------------------------------------
     kdir = os.path.join(P04, f"K_{K}")
     post = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
@@ -243,16 +247,16 @@ def main():
     means = pd.read_csv(os.path.join(kdir, "profile_means.csv"))
 
     # Find max-probability column
-    prob_cols = [c for c in post.columns if c.startswith("prob_")]
+    prob_cols = [c for c in post.columns if c.startswith("post_profile_")]
     maxprob = post[prob_cols].max(axis=1).values
 
-    k6_rows_local = []
+    profile_rows_local = []
     total = 0
     for p in range(K):
         mask = labels == p
         n = int(mask.sum())
         total += n
-        k6_rows_local.append({
+        profile_rows_local.append({
             "profile": p,
             "N": n,
             "percentage": float(n / N * 100),
@@ -263,11 +267,11 @@ def main():
             "mean_max_posterior": float(maxprob[mask].mean()),
             "median_max_posterior": float(np.median(maxprob[mask])),
         })
-    pd.DataFrame(k6_rows_local).to_csv(
+    pd.DataFrame(profile_rows_local).to_csv(
         os.path.join(RESULTS_DIR, "k6_profile_audit.csv"), index=False)
-    add_check(checks, "k6_profile_sizes_sum_to_1166", 1166, total, 0, "PASS")
-    pct_sum = float(sum([r["percentage"] for r in k6_rows_local]))
-    add_check(checks, "k6_percentages_sum_100", 100.0, pct_sum, 0.01, "PASS")
+    add_check(checks, "k_profile_sizes_sum_to_1166", 1166, total, 0, "PASS")
+    pct_sum = float(sum([r["percentage"] for r in profile_rows_local]))
+    add_check(checks, "k_percentages_sum_100", 100.0, pct_sum, 0.01, "PASS")
 
     # ------------------------------------------------------------------
     # 6. CLASSIFICATION QUALITY
@@ -326,7 +330,7 @@ def main():
             "source": "results/15_profile_structure_comparison/all_k_profile_structure.csv",
         })
         structure_rows.append({
-            "metric": "K_6_n_profiles", "value": int((struct_all["K"] == 6).sum()),
+            "metric": f"K_{K}_n_profiles", "value": int((struct_all["K"] == K).sum()),
             "source": "results/15_profile_structure_comparison/all_k_profile_structure.csv",
         })
         structure_rows.append({
@@ -347,8 +351,8 @@ def main():
         gv6 = pd.read_csv(os.path.join(P16, "k6_gap_variance_explained.csv"))
         lgr = pd.read_csv(os.path.join(P16, "level_gap_correlation.csv"))
         gapval_rows.append({
-            "metric": "K6_between_over_total_pct",
-            "value": float(gv[gv["K"] == 6]["between_over_total"].iloc[0] * 100),
+            "metric": f"K{K}_between_over_total_pct",
+            "value": float(gv[gv["K"] == K]["between_over_total"].iloc[0] * 100),
             "source": "results/16_gap_profile_validation/gap_variance_decomposition.csv",
         })
         gapval_rows.append({
@@ -371,7 +375,7 @@ def main():
     # ------------------------------------------------------------------
     try:
         am = pd.read_csv(os.path.join(P17, "phase17_master.csv"))
-        ref = pd.read_csv(os.path.join(P17, "reference_k6.csv"))
+        ref = pd.read_csv(os.path.join(P17, f"reference_K{K}.csv"))
         for _, r in am.iterrows():
             altmodel_rows.append({
                 "metric": f"BIC_{r['specification']}",
@@ -518,12 +522,12 @@ def main():
     cp_pairs = [
         ("N", "P01_dimensions", 1166, int(raw.shape[0])),
         ("N", "P02_scores", 1166, int(scores.shape[0])),
-        ("N", "P04_K6_labels", 1166, int(len(labels))),
+        ("N", f"P04_K{K}_labels", 1166, int(len(labels))),
         ("K", "P04_fit_min_BIC", K, bic_min_K),
         ("K", "P18_predictor", K, int(p18m.loc[p18m["item"] == "K_frozen", "value"].iloc[0])),
         ("n_constructs", "P02_definitions", 10, len(CONSTRUCT_ITEMS)),
         ("reference_profile", "P18", 0, int(p18m.loc[p18m["item"] == "reference_profile", "value"].iloc[0])),
-        ("n_tests", "P18", 65, int(p18m.loc[p18m["item"] == "n_tests", "value"].iloc[0])),
+        ("n_tests", "P18", int(13 * (K - 1)), int(p18m.loc[p18m["item"] == "n_tests", "value"].iloc[0])),
         ("n_predictors", "P18", 13, int(p18m.loc[p18m["item"] == "n_predictors", "value"].iloc[0])),
     ]
     for var, ph, a, b in cp_pairs:
@@ -534,7 +538,7 @@ def main():
             "abs_diff": abs(a - b), "status": status,
         })
 
-    # Profile sizes: phase 04 K=6 vs phase 13 vs phase 16
+    # Profile sizes: phase 04 selected-K vs phase 13 vs phase 16
     p13_sizes = pd.read_csv(os.path.join(P13, "k6_profile_sizes.csv"))
     p04_sizes = pd.read_csv(os.path.join(kdir, "profile_sizes.csv")) if os.path.exists(
         os.path.join(kdir, "profile_sizes.csv")) else None
@@ -592,17 +596,17 @@ def main():
         E("lpa", f"K{int(r['K'])}_entropy", float(r["entropy"]), "04",
           "results/04_lpa_estimation/model_fit.csv")
     E("lpa", "primary_K", K, "05", "results/05_lpa_selection/selected_model.csv")
-    E("lpa", "K6_minimum_BIC_under_primary_specification", True, "05", "results/05_lpa_selection/selected_model.csv")
+    E("lpa", f"K{K}_minimum_BIC_under_primary_specification", True, "05", "results/05_lpa_selection/selected_model.csv")
 
-    for prow in k6_rows_local:
+    for prow in profile_rows_local:
         E("k6_profiles", f"profile_{prow['profile']}_N", prow["N"], "04/06",
-          "results/04_lpa_estimation/K_6/")
+          f"results/04_lpa_estimation/K_{K}/")
         E("k6_profiles", f"profile_{prow['profile']}_INT_mean", prow["INT_mean"], "04/06",
-          "results/04_lpa_estimation/K_6/")
+          f"results/04_lpa_estimation/K_{K}/")
         E("k6_profiles", f"profile_{prow['profile']}_BE_mean", prow["BE_mean"], "04/06",
-          "results/04_lpa_estimation/K_6/")
+          f"results/04_lpa_estimation/K_{K}/")
         E("k6_profiles", f"profile_{prow['profile']}_INT_minus_BE", prow["INT_minus_BE"], "04/06",
-          "results/04_lpa_estimation/K_6/")
+          f"results/04_lpa_estimation/K_{K}/")
 
     E("classification", "mean_max_posterior", float(maxprob.mean()), "13",
       "results/13_k6_profile_validation/k6_classification_quality.csv")
@@ -654,10 +658,10 @@ def main():
         ("02", "results/02_measurement/int_be_correlation.csv", "INT-BE correlation"),
         ("03", "results/03_gap_analysis/gap_scores.npy", "Respondent-level GAP"),
         ("03", "results/03_gap_analysis/gap_statistics.csv", "GAP descriptive stats"),
-        ("04", "results/04_lpa_estimation/model_fit.csv", "K=2..6 model fit comparison"),
-        ("04", "results/04_lpa_estimation/K_6/posterior_probabilities.csv", "K=6 posteriors"),
-        ("04", "results/04_lpa_estimation/K_6/profile_means.csv", "K=6 profile means (z_INT, z_BE)"),
-        ("04", "results/04_lpa_estimation/K_6/profile_sizes.csv", "K=6 profile sizes"),
+        ("04", "results/04_lpa_estimation/model_fit.csv", f"K={int(fit['K'].min())}..{int(fit['K'].max())} model fit comparison"),
+        ("04", f"results/04_lpa_estimation/K_{K}/posterior_probabilities.csv", f"K={K} posteriors"),
+        ("04", f"results/04_lpa_estimation/K_{K}/profile_means.csv", f"K={K} profile means (z_INT, z_BE)"),
+        ("04", f"results/04_lpa_estimation/K_{K}/profile_sizes.csv", f"K={K} profile sizes"),
         ("05", "results/05_lpa_selection/selected_model.csv", "Selected K (minimum BIC)"),
         ("06", "results/06_profile_analysis/", "Profile characterization"),
         ("07", "results/07_profile_predictors/fdr_results.csv", "Phase 7 predictor FDR results"),
@@ -669,7 +673,7 @@ def main():
         ("13", "results/13_k6_profile_validation/k6_classification_quality.csv", "Classification quality"),
         ("14", "results/14_k6_stability/bootstrap_results.csv", "Bootstrap stability"),
         ("14", "results/14_k6_stability/split_sample_results.csv", "Split-sample validation"),
-        ("15", "results/15_profile_structure_comparison/all_k_profile_structure.csv", "K=2..6 structure"),
+        ("15", "results/15_profile_structure_comparison/all_k_profile_structure.csv", "All-K profile structure"),
         ("16", "results/16_gap_profile_validation/gap_variance_decomposition.csv", "Gap variance decomp"),
         ("16", "results/16_gap_profile_validation/gap_only_model_comparison.csv", "Gap-only GMM"),
         ("16", "results/16_gap_profile_validation/level_gap_correlation.csv", "LEVEL-GAP r"),
@@ -727,7 +731,9 @@ def main():
     # 17. README
     # ------------------------------------------------------------------
     overall = "PASS" if n_fail == 0 else "PASS_WITH_CORRECTION"
-    k6_pct_total = sum(p["percentage"] for p in k6_rows_local)
+    k6_pct_total = sum(p["percentage"] for p in profile_rows_local)
+    p18_n_tests = int(p18m.loc[p18m["item"] == "n_tests", "value"].iloc[0])
+    p18_n_fdr_sig = int(p18m.loc[p18m["item"] == "n_FDR_significant", "value"].iloc[0])
 
     readme = f"""# Phase 19 — Final Numerical Audit and Results Freeze
 
@@ -751,16 +757,17 @@ n BE > INT = {n_be_gt_int} ({n_be_gt_int/N*100:.2f}%)
 ## Primary LPA Specification
 - Estimator: sklearn.mixture.GaussianMixture, full covariance
 - n_init = 1000, SEED = 42
-- K = 2..6 estimated; K = {K} selected
+- K = {int(fit['K'].min())}..{int(fit['K'].max())} estimated; K = {K} selected
 
 ## K-Selection Criterion
-Minimum BIC under the primary specified model (BIC minimization;
-historical maximization bug corrected).
+Minimum BIC among non-degenerate fits under the primary specified
+model (BIC minimization; historical maximization bug corrected),
+per results/05_lpa_selection/selected_model.csv.
 BIC = -2 LL + k log(n), where k = parameters, n = sample size.
 
-## K=6 Profile Sizes
+## K={K} Profile Sizes
 """
-    for p in k6_rows_local:
+    for p in profile_rows_local:
         readme += f"- Profile {p['profile']}: N = {p['N']} ({p['percentage']:.2f}%)\n"
     readme += f"- Total = {total} ({k6_pct_total:.2f}%)\n"
 
@@ -784,10 +791,10 @@ Covariance, score-representation, and random-seed sensitivity. All
 fits converged. Profile matching distances reported.
 
 ## Predictor Model (Phase 18)
-- 13 predictors x 5 non-reference profiles = 65 tests
+- 13 predictors x {K - 1} non-reference profiles = {p18_n_tests} tests
 - MNLogit, BFGS, converged
-- Joint Benjamini-Hochberg FDR across all 65 tests
-- 21 / 65 FDR-significant
+- Joint Benjamini-Hochberg FDR across all {p18_n_tests} tests
+- {p18_n_fdr_sig} / {p18_n_tests} FDR-significant
 
 ## Multicollinearity Diagnostics (Phase 18B)
 - VIF range: {float(vif['VIF'].min()):.2f}..{float(vif['VIF'].max()):.2f}

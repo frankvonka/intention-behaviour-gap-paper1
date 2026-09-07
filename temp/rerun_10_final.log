@@ -1,0 +1,66 @@
+============================================================
+PHASE 10 — FINAL RESULTS PACKAGE COMPLETE
+============================================================
+Selected K = 7
+
+Files copied: 47
+Successfully copied: 47
+
+README: results/10_final/README.md
+
+Directory structure:
+  ./README.md
+  gap_results/gap_scores.npy
+  gap_results/gap_statistics.csv
+  gap_results/standardized_scores.csv
+  numerical_audit/audit_checks.csv
+  numerical_audit/audit_discrepancies.csv
+  selected_lpa/classification_uncertainty.csv
+  selected_lpa/model_comparison.csv
+  selected_lpa/selected_model.csv
+  selected_lpa/selection_diagnostics.csv
+  selected_lpa/stability.csv
+  profile_predictors/coefficients.csv
+  profile_predictors/confidence_intervals.csv
+  profile_predictors/fdr_results.csv
+  profile_predictors/odds_ratios.csv
+  profile_predictors/p_values.csv
+  robustness_results/classification_sensitivity.csv
+  robustness_results/covariance_sensitivity.csv
+  robustness_results/outlier_sensitivity.csv
+  robustness_results/profile_stability.csv
+  robustness_results/random_seed_sensitivity.csv
+  robustness_results/random_start_stability.csv
+  robustness_results/score_sensitivity.csv
+  measurement_results/construct_correlation_matrix.csv
+  measurement_results/construct_scores.csv
+  measurement_results/construct_statistics.csv
+  measurement_results/cronbach_alpha.csv
+  measurement_results/int_be_correlation.csv
+  measurement_results/item_statistics.csv
+  profile_comparisons/profile_comparisons.csv
+  profile_comparisons/profile_effect_sizes.csv
+  lpa_model_comparison/model_fit.csv
+  lpa_model_comparison/K_7/covariance_matrices.json
+  lpa_model_comparison/K_7/posterior_probabilities.csv
+  lpa_model_comparison/K_7/profile_means.csv
+  lpa_model_comparison/K_7/profile_means.npy
+  lpa_model_comparison/K_7/profile_parameters.csv
+  lpa_model_comparison/K_7/profile_sizes.csv
+  lpa_model_comparison/K_7/random_start_diagnostics.csv
+  lpa_model_comparison/K_6/covariance_matrices.json
+  lpa_model_comparison/K_6/posterior_probabilities.csv
+  lpa_model_comparison/K_6/profile_means.csv
+  lpa_model_comparison/K_6/profile_means.npy
+  lpa_model_comparison/K_6/profile_parameters.csv
+  lpa_model_comparison/K_6/profile_sizes.csv
+  lpa_model_comparison/K_6/random_start_diagnostics.csv
+  profile_parameters/gap_profile_check.csv
+  profile_parameters/profile_means.csv
+  profile_parameters/profile_sizes.csv
+  data_diagnostics/column_information.csv
+  data_diagnostics/data_dimensions.csv
+  data_diagnostics/dataset_metadata.json
+  data_diagnostics/duplicate_information.csv
+  data_diagnostics/item_ranges.csv
+  data_diagnostics/missing_values.csv

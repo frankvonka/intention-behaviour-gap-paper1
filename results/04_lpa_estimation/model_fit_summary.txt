@@ -1,0 +1,5 @@
+Data: results/02_measurement/construct_scores.csv
+N = 1166, indicators = ['z_INT', 'z_BE']
+covariance_type = full, n_init = 1000, seed = 42
+Best BIC (minimum) at K = 7, BIC = 1616.02
+NOTE: Model selection is performed in Phase 05, not here.

@@ -1,0 +1,1 @@
+Figure 7. Distribution of respondent-level maximum posterior probability under the K = 7 primary solution (N = 1,166). Mean = 0.9105, median = 0.9995; 77.02% at or above 0.90, 82.16% at or above 0.80, 84.91% at or above 0.70; 0.0% below 0.50.

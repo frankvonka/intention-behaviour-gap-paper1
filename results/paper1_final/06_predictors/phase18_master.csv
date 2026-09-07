@@ -1,0 +1,14 @@
+item,value
+N,1166.0
+K_frozen,6.0
+reference_profile,0.0
+n_predictors,13.0
+n_tests,65.0
+log_likelihood,-1309.941088922808
+AIC,2759.882177845616
+BIC,3114.1755835293466
+McFadden_pseudo_R2,0.30353097027969833
+converged,1.0
+max_VIF,67.44221815766522
+condition_number,270.9790660966388
+n_FDR_significant,21.0

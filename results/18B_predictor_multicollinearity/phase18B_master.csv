@@ -1,0 +1,17 @@
+item,value
+N,1166.0
+K,7.0
+reference_profile,0.0
+n_predictors_primary,13.0
+n_tests_primary,78.0
+primary_LL,-1480.326532132418
+primary_AIC,3128.653064264836
+primary_BIC,3553.8051510853124
+primary_pseudo_R2,0.2982477700301479
+primary_converged,1.0
+max_VIF,67.44221815766522
+condition_number_corr,18.402005415479238
+smallest_eigenvalue_corr,0.26088601679233325
+n_pairs_abs_r_ge_0.70,1.0
+max_abs_beta_diff_vs_phase18,2.220446049250313e-16
+max_abs_OR_diff_vs_phase18,2.220446049250313e-16

@@ -1,0 +1,7 @@
+metric,value
+K6_between_over_total,0.2656514253638909
+K6_within_profile_variance_GAP,0.5134111104576278
+gap_only_min_BIC_K,6.0
+gap_only_min_BIC,2598.3103287671083
+LEVEL_GAP_corr_r,-7.340726334084667e-17
+LEVEL_GAP_p,1.0

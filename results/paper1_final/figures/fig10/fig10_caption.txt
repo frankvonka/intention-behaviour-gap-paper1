@@ -1,0 +1,1 @@
+Figure 10. Five-fold cross-validation held-out log-likelihood by K (K = 2 to 7); error bars show +/- 1 SD across folds. K = 7 (primary, BIC-selected) had the highest mean held-out log-likelihood (-9.25); cross-validated fit is one criterion and BIC is the primary selection criterion.

@@ -133,10 +133,12 @@ def main():
     # LPA (Phase 04)
     # ------------------------------------------------------------------
     fit = pd.read_csv(os.path.join(PHASE_DIRS["04"], "model_fit.csv"))
-    # BIC must be MINIMIZED
+    # BIC must be MINIMIZED at the selected K from Phase 05
+    selected = pd.read_csv(os.path.join(PHASE_DIRS["05"], "selected_model.csv"))
+    K_sel = int(selected["selected_K"].values[0])
     best_bic = fit["BIC"].min()
     best_K_bic = int(fit.loc[fit["BIC"].idxmin(), "K"])
-    add_check("lpa", "BIC_minimized", True, best_K_bic == 6, "PASS" if best_K_bic == 6 else "FAIL")
+    add_check("lpa", "BIC_minimized", True, best_K_bic == K_sel, "PASS" if best_K_bic == K_sel else "FAIL")
 
     # Verify BIC formula: BIC = -2LL + k*log(n)
     for _, row in fit.iterrows():

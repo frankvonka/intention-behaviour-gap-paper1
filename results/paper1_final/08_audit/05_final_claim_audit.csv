@@ -1,0 +1,6 @@
+item,value
+n_supported,12
+n_caveated,4
+n_unsupported,8
+n_total_audited,24
+final_status,PASS_WITH_CAVEATS

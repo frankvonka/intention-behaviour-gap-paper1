@@ -1,0 +1,13 @@
+============================================================
+PHASE 13 — K=7 PROFILE VALIDATION COMPLETE
+============================================================
+
+Inputs: N=1166, K=7
+  results/13_k6_profile_validation/k6_profile_descriptives.csv — OK
+  results/13_k6_profile_validation/pairwise_profile_separation.csv — OK
+  results/13_k6_profile_validation/k6_int_be_configuration.csv — OK
+  results/13_k6_profile_validation/k6_classification_quality.csv — OK
+  results/13_k6_profile_validation/k6_profile_uncertainty.csv — OK
+  results/13_k6_profile_validation/k6_profile_sizes.csv — OK
+  results/13_k6_profile_validation/k6_validation_master.csv — OK
+  results/13_k6_profile_validation/README.md — OK

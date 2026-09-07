@@ -1,0 +1,19 @@
+============================================================
+PHASE 07 — PROFILE PREDICTORS COMPLETE
+============================================================
+Selected K = 7, baseline profile = 0
+Predictors: ['ATT', 'CON', 'SNO', 'COVID', 'PU', 'PEU', 'PO', 'PRI', 'age', 'gender', 'Education', 'Occupation', 'income']
+N = 1166
+Model converged: True
+Log-likelihood: -1480.3265
+AIC: 3128.6531
+BIC: 3553.8052
+
+FDR (BH) tests: 84, significant at 0.05: 29
+
+Key outputs:
+  results/07_profile_predictors/coefficients.csv — OK
+  results/07_profile_predictors/odds_ratios.csv — OK
+  results/07_profile_predictors/confidence_intervals.csv — OK
+  results/07_profile_predictors/p_values.csv — OK
+  results/07_profile_predictors/fdr_results.csv — OK

@@ -27,8 +27,9 @@ PHASE03_DIR = "results/03_gap_analysis"
 PHASE04_DIR = "results/04_lpa_estimation"
 DATA_PATH = "data.xls"
 RESULTS_DIR = "results/17_alternative_model_validation"
+PHASE05_DIR = "results/05_lpa_selection"
 
-K = 6
+K = int(pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))["selected_K"].iloc[0])
 N_INIT = 1000
 SEED = 42
 SEEDS = [1, 2, 3, 4, 5]
@@ -73,7 +74,7 @@ def safe_entropy(posterior):
     log_k = np.log(Kk)
     if log_k == 0:
         return 0.0
-    return float(1.0 - np.sum(p * np.log(p)) / (n * log_k))
+    return float(-np.sum(p * np.log(p)) / (n * log_k))
 
 
 def fit_gmm(X, cov_type, seed, n_init=N_INIT):
@@ -154,7 +155,7 @@ def main():
     GAP = np.load(os.path.join(PHASE03_DIR, "gap_scores.npy"))
 
     # ==================================================================
-    # 1. ORIGINAL K=6 REFERENCE
+    # 1. ORIGINAL SELECTED-K REFERENCE
     # ==================================================================
     fit = pd.read_csv(os.path.join(PHASE04_DIR, "model_fit.csv"))
     frow = fit[fit["K"] == K].iloc[0]
@@ -174,9 +175,9 @@ def main():
         {"metric": "profile_GAP_means", "value": str(ref_table["GAP_mean"].round(6).tolist())},
     ]
     pd.DataFrame(ref_rows).to_csv(
-        os.path.join(RESULTS_DIR, "reference_k6.csv"), index=False
+        os.path.join(RESULTS_DIR, f"reference_K{K}.csv"), index=False
     )
-    ref_table.to_csv(os.path.join(RESULTS_DIR, "reference_k6_profiles.csv"), index=False)
+    ref_table.to_csv(os.path.join(RESULTS_DIR, f"reference_K{K}_profiles.csv"), index=False)
     ref_int_be = ref_table[["INT_mean", "BE_mean"]].values
 
     # ==================================================================
@@ -297,7 +298,7 @@ def main():
     # Reference
     for _, r in ref_table.iterrows():
         gap_dir_rows.append({
-            "specification": "reference_k6",
+            "specification": f"reference_K{K}",
             "profile": int(r["profile"]),
             "INT_minus_BE": float(r["INT_minus_BE"]),
             "GAP_mean": float(r["GAP_mean"]),
@@ -374,7 +375,7 @@ def main():
     # 7. MASTER FILE
     # ==================================================================
     master_rows = [
-        {"specification": "reference_k6", "BIC": float(frow["BIC"]),
+        {"specification": f"reference_K{K}", "BIC": float(frow["BIC"]),
          "AIC": float(frow["AIC"]), "entropy": float(frow["entropy"]),
          "total_matching_distance": 0.0},
     ]
@@ -412,16 +413,17 @@ def main():
     readme = f"""# Phase 17 — Alternative Model Validation
 
 ## Purpose
-Sensitivity analysis of the K=6 INT-BE profile structure under
-alternative statistical specifications. No model selection, no
-interpretation.
+Sensitivity analysis of the selected-K (K = {K}, minimum BIC among
+non-degenerate fits per results/05_lpa_selection/selected_model.csv)
+INT-BE profile structure under alternative statistical specifications.
+No model selection, no interpretation.
 
 ## Specifications Tested
-1. **Covariance type** (full / diag / spherical), K=6, indicators =
+1. **Covariance type** (full / diag / spherical), K = {K}, indicators =
    all 10 constructs (INT, BE, ATT, CON, SNO, COVID, PU, PEU, PO, PRI),
    standardized across respondents
 2. **Score representation** (arithmetic mean scores vs sklearn
-   FactorAnalysis 1-component scores for INT and BE), K=6 full
+   FactorAnalysis 1-component scores for INT and BE), K = {K} full
    covariance on the 2 standardized indicators
 3. **Random seeds** 1, 2, 3, 4, 5 — primary 2-indicator (z_INT, z_BE)
    full-covariance specification
@@ -434,13 +436,13 @@ interpretation.
 - Scaling: respondent-level z-standardization per indicator
 
 ## Profile Matching
-- Alternative profiles matched to the primary K=6 reference by
+- Alternative profiles matched to the primary K = {K} reference by
   minimum Euclidean distance on standardized (INT, BE) profile means
 - One-to-one assignment via the Hungarian algorithm
   (scipy.optimize.linear_sum_assignment)
 
 ## Output Files
-- reference_k6.csv / reference_k6_profiles.csv — frozen primary solution
+- reference_K{K}.csv / reference_K{K}_profiles.csv — frozen primary solution
 - covariance_sensitivity.csv — full/diag/spherical fits
 - score_representation_sensitivity.csv — mean vs factor scores
 - seed_sensitivity.csv — seeds 1..5
@@ -463,7 +465,7 @@ Previous phase outputs untouched. Dataset unchanged. No plots.
     print("\nMaster summary:")
     print(pd.DataFrame(master_rows).to_string(index=False))
     print("\nOutputs:")
-    for fn in ["reference_k6.csv", "reference_k6_profiles.csv",
+    for fn in [f"reference_K{K}.csv", f"reference_K{K}_profiles.csv",
                "covariance_sensitivity.csv", "score_representation_sensitivity.csv",
                "seed_sensitivity.csv", "gap_direction_sensitivity.csv",
                "profile_matching_sensitivity.csv", "phase17_master.csv", "README.md"]:

@@ -1,0 +1,4 @@
+metric,value,source
+K_2_n_profiles,2,results/15_profile_structure_comparison/all_k_profile_structure.csv
+K_7_n_profiles,7,results/15_profile_structure_comparison/all_k_profile_structure.csv
+n_split_rows,20,results/15_profile_structure_comparison/profile_split_comparison.csv

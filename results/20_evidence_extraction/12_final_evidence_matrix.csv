@@ -1,0 +1,81 @@
+claim_id,claim,numerical_value,source_phase,source_file,statistic,sample_size,units,status
+DATA-N,Sample size,1166,01,results/01_data_inspection,rows_in_dataset,1166,count,VERIFIED
+DATA-MISS,Total missing values,0,01,results/01_data_inspection,sum_missing_cells,1166,count,VERIFIED
+DATA-DUP,Duplicate rows (all columns),42,01,results/01_data_inspection,n_duplicate_rows,1166,count,VERIFIED
+DATA-RANGE,Psychometric item range,1-5,01,results/01_data_inspection,min_max_item_values,1166,Likert_1_to_5,VERIFIED
+MEAS-ATT-A,ATT Cronbach alpha,0.7021115826048248,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-CON-A,CON Cronbach alpha,0.7621009220059145,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-SNO-A,SNO Cronbach alpha,0.8055239192911413,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-COVID-A,COVID Cronbach alpha,0.7728876142223233,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-INT-A,INT Cronbach alpha,0.7823103097751618,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-BE-A,BE Cronbach alpha,0.7479826851933673,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-PU-A,PU Cronbach alpha,0.7274298923373648,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-PEU-A,PEU Cronbach alpha,0.6726744168570922,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-PO-A,PO Cronbach alpha,0.8112650061338942,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-PRI-A,PRI Cronbach alpha,0.918593846027516,02,results/02_measurement,Cronbach_alpha,1166,alpha_0_to_1,VERIFIED
+MEAS-INTBE-R,INT-BE Pearson correlation,0.6514575831525611,02,results/02_measurement,pearson_r,1166,r_minus1_to_1,VERIFIED
+MEAS-INTBE-CI,INT-BE 95% CI,"[0.6171288762815663, 0.6833111033615757]",02,results/02_measurement,fisher_z_95ci,1166,r,VERIFIED
+MEAS-INTBE-P,INT-BE p-value,8.832882449485395e-142,02,results/02_measurement,p_value,1166,p,VERIFIED
+IB-INT-M,INT mean,3.891080617495712,02,results/02_measurement,construct_mean,1166,Likert_1_to_5,VERIFIED
+IB-BE-M,BE mean,3.788593481989708,02,results/02_measurement,construct_mean,1166,Likert_1_to_5,VERIFIED
+GAP-DEF,GAP definition,z(INT)-z(BE),03,results/03_gap_analysis,formula,1166,z_score_difference,VERIFIED
+GAP-MEAN,GAP mean,-4.875078804528989e-16,03,results/03_gap_analysis,mean,1166,z_score_difference,VERIFIED
+GAP-SD,GAP SD,0.8349160638620378,03,results/03_gap_analysis,SD_ddof1,1166,z_score_difference,VERIFIED
+GAP-N-INTGTBE,Respondents with INT>BE,524,03,results/03_gap_analysis,count_positive_gap,1166,count,VERIFIED
+GAP-N-BEGTINT,Respondents with BE>INT,642,03,results/03_gap_analysis,count_negative_gap,1166,count,VERIFIED
+LPA-K7-BIC,K=7 BIC,1616.0232002565715,04,results/04_lpa_estimation,BIC_minimum,1166,nats,VERIFIED
+LPA-K7-AIC,K=7 AIC,1408.5084912132438,04,results/04_lpa_estimation,AIC,1166,nats,VERIFIED
+LPA-K7-LL,K=7 log likelihood,-663.2542456066219,04,results/04_lpa_estimation,log_likelihood,1166,nats,VERIFIED
+LPA-K7-ENT,K=7 classification entropy,0.0991256569666002,04,results/04_lpa_estimation,entropy_normalized,1166,entropy_0_to_1,VERIFIED
+LPA-BIC-MIN-K,K with minimum BIC across estimated K values,7,05,results/05_lpa_selection,argmin_BIC,1166,K,VERIFIED
+K7-SIZES,K=7 profile sizes,"[281, 125, 108, 264, 245, 70, 73]",04,results/04_lpa_estimation,profile_N,1166,count,VERIFIED
+K7-P0-INT,Profile 0 INT mean,0.7549731879199317,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P0-BE,Profile 0 BE mean,0.2946301604115101,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P0-DIFF,Profile 0 INT-BE,0.46034302750842165,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+K7-P1-INT,Profile 1 INT mean,-1.1529575207988971,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P1-BE,Profile 1 BE mean,-0.955691737817171,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P1-DIFF,Profile 1 INT-BE,-0.19726578298172615,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+K7-P2-INT,Profile 2 INT mean,0.7758909057696088,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P2-BE,Profile 2 BE mean,1.6065585012004528,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P2-DIFF,Profile 2 INT-BE,-0.830667595430844,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+K7-P3-INT,Profile 3 INT mean,-0.4369813869410904,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P3-BE,Profile 3 BE mean,-0.2197273382996452,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P3-DIFF,Profile 3 INT-BE,-0.2172540486414452,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+K7-P4-INT,Profile 4 INT mean,0.1423966001964976,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P4-BE,Profile 4 BE mean,0.0723617126953837,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P4-DIFF,Profile 4 INT-BE,0.0700348875011139,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+K7-P5-INT,Profile 5 INT mean,-2.0796653783914336,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P5-BE,Profile 5 BE mean,-1.1682525030891442,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P5-DIFF,Profile 5 INT-BE,-0.9114128753022894,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+K7-P6-INT,Profile 6 INT mean,1.449754362630483,04,results/04_lpa_estimation/K_7,profile_mean_z_INT,1166,z,VERIFIED
+K7-P6-BE,Profile 6 BE mean,0.7099256034272704,04,results/04_lpa_estimation/K_7,profile_mean_z_BE,1166,z,VERIFIED
+K7-P6-DIFF,Profile 6 INT-BE,0.7398287592032126,04,results/04_lpa_estimation/K_7,INT_minus_BE,1166,z,VERIFIED
+PG-K7-BETWEEN,K=7 between-profile GAP variance proportion,0.3345799583661564,16,results/16_gap_profile_validation,between_over_total,1166,proportion_0_to_1,VERIFIED
+PG-LEVEL-GAP-R,LEVEL-GAP Pearson r,-7.340726334084667e-17,16,results/16_gap_profile_validation,pearson_r,1166,r,VERIFIED
+CLS-MEAN-MAXPROB,Mean max posterior,0.9105387377029004,13,results/13_k6_profile_validation,mean_max_probability,1166,prob_0_to_1,VERIFIED
+CLS-MED-MAXPROB,Median max posterior,0.999500540877914,13,results/13_k6_profile_validation,median_max_probability,1166,prob_0_to_1,VERIFIED
+CLS-PCT70,% max posterior >= 0.70,84.90566037735849,13,results/13_k6_profile_validation,pct_maxprob_>=0.70,1166,percent,VERIFIED
+STAB-bootstrap_B,bootstrap_B,200,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-bootstrap_converged,bootstrap_converged,200,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-bootstrap_mean_matching_cost,bootstrap_mean_matching_cost,2.59943545288815,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_0_pct_INT_gt_BE,profile_0_pct_INT_gt_BE,80.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_0_pct_BE_gt_INT,profile_0_pct_BE_gt_INT,19.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_1_pct_INT_gt_BE,profile_1_pct_INT_gt_BE,12.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_1_pct_BE_gt_INT,profile_1_pct_BE_gt_INT,87.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_2_pct_INT_gt_BE,profile_2_pct_INT_gt_BE,87.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_2_pct_BE_gt_INT,profile_2_pct_BE_gt_INT,12.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_3_pct_INT_gt_BE,profile_3_pct_INT_gt_BE,18.0,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_3_pct_BE_gt_INT,profile_3_pct_BE_gt_INT,82.0,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_4_pct_INT_gt_BE,profile_4_pct_INT_gt_BE,2.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_4_pct_BE_gt_INT,profile_4_pct_BE_gt_INT,97.5,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_5_pct_INT_gt_BE,profile_5_pct_INT_gt_BE,48.0,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-profile_5_pct_BE_gt_INT,profile_5_pct_BE_gt_INT,52.0,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-split_sample_n_halves,split_sample_n_halves,2,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-split_sample_n_respondents_total,split_sample_n_respondents_total,1166,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+STAB-split_sample_n_per_half,split_sample_n_per_half,583,14,results/14_k6_stability,stability_diagnostic,1166,varies,VERIFIED
+PRED-N-TESTS,Number of MNLogit tests,78,18,results/18_profile_predictors,predictor_x_contrast,1166,count,VERIFIED
+PRED-LL,MNLogit log-likelihood,-1480.326532132418,18,results/18_profile_predictors,log_likelihood,1166,nats,VERIFIED
+PRED-R2,McFadden pseudo-R2,0.2982477700301479,18,results/18_profile_predictors,mcfadden_pseudo_R2,1166,r2_0_to_1,VERIFIED
+PRED-FDR-SIG,FDR-significant tests,19,18,results/18_profile_predictors,fdr_significant_count_0.05,1166,count,VERIFIED
+ROB-VIF-MAX,Max VIF (Phase 18B),67.44221815766522,18B,results/18B_predictor_multicollinearity,max_VIF,1166,vif,VERIFIED
+ROB-PAIR70,Pairs |r|>=0.70 (Phase 18B),1,18B,results/18B_predictor_multicollinearity,count_high_correlation_pairs,1166,count,VERIFIED

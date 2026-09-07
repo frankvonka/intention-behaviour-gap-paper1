@@ -2,15 +2,16 @@
 Phase 18 — Profile Predictor Analysis
 =======================================
 Analyzes which observed psychological, contextual, and demographic
-variables predict membership in the frozen PRIMARY K=6 profiles.
+variables predict membership in the frozen PRIMARY profiles
+(K read dynamically from results/05_lpa_selection/selected_model.csv).
 
-Outcome: frozen K=6 profile membership (Profile 0 = reference).
+Outcome: frozen selected-K profile membership (Profile 0 = reference).
 Predictors: ATT, CON, SNO, COVID, PU, PEU, PO, PRI (psychometric)
             age, gender, Education, Occupation, income (demographic)
 
 Multinomial logistic regression via statsmodels MNLogit.
-13 predictors x 5 non-reference profiles = 65 tests.
-Benjamini-Hochberg FDR applied across ALL 65 tests jointly.
+13 predictors x (K-1) non-reference profiles = 13 x (K-1) tests.
+Benjamini-Hochberg FDR applied across ALL tests jointly.
 
 No interpretation. No plots. No model refitting. No variable removal.
 """
@@ -29,7 +30,8 @@ PHASE04_DIR = "results/04_lpa_estimation"
 DATA_PATH = "data.xls"
 RESULTS_DIR = "results/18_profile_predictors"
 
-K = 6  # frozen primary solution
+PHASE05_DIR = "results/05_lpa_selection"
+K = int(pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))["selected_K"].iloc[0])  # frozen primary solution (selected by Phase 05)
 REFERENCE_PROFILE = 0
 
 CONSTRUCT_PREDICTORS = ["ATT", "CON", "SNO", "COVID", "PU", "PEU", "PO", "PRI"]
@@ -70,7 +72,7 @@ def main():
     raw = pd.read_excel(DATA_PATH, sheet_name=0).copy()
     N = scores.shape[0]
 
-    # Frozen K=6 classification
+    # Frozen selected-K classification
     kdir = os.path.join(PHASE04_DIR, f"K_{K}")
     post_df = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
     labels = post_df["assigned_class"].values
@@ -111,7 +113,7 @@ def main():
     p_vals = result.pvalues
 
     # ------------------------------------------------------------------
-    # Coefficient table: 13 predictors x 5 non-reference profiles = 65 tests
+    # Coefficient table: 13 predictors x (K-1) non-reference profiles = 13 x (K-1) tests
     # ------------------------------------------------------------------
     rows = []
     fdr_input = []
@@ -147,7 +149,7 @@ def main():
     results_df = pd.DataFrame(rows)
 
     # ------------------------------------------------------------------
-    # FDR correction across ALL 65 tests jointly
+    # FDR correction across ALL 13 x (K-1) tests jointly
     # ------------------------------------------------------------------
     fdr_adjusted = benjamini_hochberg(fdr_input)
     results_df["p_FDR"] = fdr_adjusted
@@ -188,7 +190,12 @@ def main():
         vif_values.append(float(variance_inflation_factor(X_vif, i)))
     vif_df = pd.DataFrame({"predictor": PREDICTORS, "VIF": vif_values})
 
-    # Condition number of the full design matrix (with constant)
+    # Condition number of the full design matrix (with constant, unscaled).
+    # NOTE: this is NOT comparable to the correlation-matrix condition number
+    # (condition_number_corr = 18.40 in Phase 18B). The design-matrix version
+    # mixes raw scales (age ~ tens, Likert ~ ones) and a constant column, so a
+    # large value here is expected and must not be quoted as multicollinearity
+    # evidence. Quote condition_number_corr from Phase 18B instead.
     cond_number = float(np.linalg.cond(X_design.values.astype(float)))
 
     # McFadden pseudo-R2 = 1 - LL_full / LL_null
@@ -212,7 +219,7 @@ def main():
         {"metric": "converged", "value": float(converged)},
         {"metric": "n_missing_predictor_values", "value": float(n_missing)},
         {"metric": "max_VIF", "value": float(max(vif_values))},
-        {"metric": "condition_number", "value": cond_number},
+        {"metric": "condition_number_design_with_const_UNSCALED_DO_NOT_COMPARE", "value": cond_number},
         {"metric": "n_FDR_significant", "value": float(int(results_df["significant_FDR"].sum()))},
     ]
     diag_df = pd.DataFrame(diag_rows)
@@ -234,7 +241,7 @@ def main():
         {"item": "McFadden_pseudo_R2", "value": mcfadden_r2},
         {"item": "converged", "value": float(converged)},
         {"item": "max_VIF", "value": float(max(vif_values))},
-        {"item": "condition_number", "value": cond_number},
+        {"item": "condition_number_design_with_const_UNSCALED_DO_NOT_COMPARE", "value": cond_number},
         {"item": "n_FDR_significant", "value": float(int(results_df["significant_FDR"].sum()))},
     ]
     master_df = pd.DataFrame(master_rows)
@@ -247,13 +254,15 @@ def main():
 
 ## Purpose
 Analyze which observed psychological, contextual, and demographic
-variables predict membership in the frozen PRIMARY K=6 profiles.
+variables predict membership in the frozen PRIMARY profiles
+(K = {K}, minimum BIC among non-degenerate fits, per
+results/05_lpa_selection/selected_model.csv).
 Purely computational. No interpretation, no plots, no literature.
 
 ## Model Specification
-- **Outcome:** frozen K=6 profile membership (from
-  results/04_lpa_estimation/K_6/posterior_probabilities.csv,
-  column assigned_class). The K=6 solution is NOT refitted.
+- **Outcome:** frozen K={K} profile membership (from
+  results/04_lpa_estimation/K_{K}/posterior_probabilities.csv,
+  column assigned_class). The selected solution is NOT refitted.
 - **Reference category:** Profile {REFERENCE_PROFILE}
 - **Model:** Multinomial logistic regression
   (statsmodels MNLogit, method='bfgs', maxiter=1000)
@@ -266,7 +275,7 @@ Purely computational. No interpretation, no plots, no literature.
   of significance.
 
 ## Calculations
-- For each predictor x non-reference profile (13 x 5 = 65 tests):
+- For each predictor x non-reference profile (13 x {K - 1} = {len(fdr_input)} tests):
   - beta (coefficient)
   - SE (standard error)
   - z = beta / SE
@@ -275,7 +284,7 @@ Purely computational. No interpretation, no plots, no literature.
   - CI_lower = exp(beta - 1.96 * SE)
   - CI_upper = exp(beta + 1.96 * SE)
 - **FDR correction:** Benjamini-Hochberg applied jointly across
-  ALL 65 tests (not per-profile).
+  ALL {len(fdr_input)} tests (not per-profile).
   - p_adj(i) = min_{{j>=i}} [p_(j) * m / j], monotonic, clipped [0,1]
   - significant_FDR = (p_FDR < {ALPHA_FDR})
 - **McFadden pseudo-R2** = 1 - LL_full / LL_null
@@ -285,7 +294,7 @@ Purely computational. No interpretation, no plots, no literature.
   (with constant)
 
 ## Output Files
-- multinomial_results.csv — 65 rows: profile, reference_profile,
+- multinomial_results.csv — {len(fdr_input)} rows: profile, reference_profile,
   predictor, beta, SE, z, p, p_FDR, OR, CI_lower, CI_upper,
   significant_FDR
 - predictor_summary.csv — per-predictor: n significant contrasts,

@@ -4,8 +4,9 @@ Phase 16 — Intention–Behavior Gap Profile Validation
 Determines whether the observed LPA profiles represent meaningful
 INT–BE configurations or mainly reflect overall response level.
 
-Uses existing K=2..K=6 results. Performs a diagnostic gap-only
-Gaussian mixture model comparison. No interpretation.
+Uses existing K results from Phase 04 (K=2..selected K, read dynamically
+from model_fit.csv; previously hardcoded K=2..K=6). Performs a diagnostic
+gap-only Gaussian mixture model comparison. No interpretation.
 """
 import os
 import json
@@ -19,10 +20,19 @@ from sklearn.mixture import GaussianMixture
 # ---------------------------------------------------------------------------
 SCORES_PATH = "results/02_measurement/construct_scores.csv"
 PHASE04_DIR = "results/04_lpa_estimation"
+PHASE05_DIR = "results/05_lpa_selection"
 PHASE03_DIR = "results/03_gap_analysis"
 RESULTS_DIR = "results/16_gap_profile_validation"
 
-K_RANGE = [2, 3, 4, 5, 6]
+# K values read dynamically from the Phase 04 fit summary
+# (previously hardcoded [2, 3, 4, 5, 6])
+K_RANGE = sorted(
+    pd.read_csv(os.path.join(PHASE04_DIR, "model_fit.csv"))["K"].unique().tolist()
+)
+# Selected primary K from the Phase 05 model selection
+K_SEL = int(
+    pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))["selected_K"].iloc[0]
+)
 SEED = 42
 N_INIT = 1000
 COVARIANCE_TYPE = "full"  # for multivariate (same as primary); gap-only uses appropriate 1D spec
@@ -52,7 +62,7 @@ def safe_entropy(posterior):
     log_k = np.log(K)
     if log_k == 0:
         return 0.0
-    return float(1.0 - np.sum(p * np.log(p)) / (n * log_k))
+    return float(-np.sum(p * np.log(p)) / (n * log_k))
 
 
 def load_labels(K):
@@ -202,13 +212,13 @@ def main():
     # ==================================================================
     # 5. GAP-ONLY CLUSTERING CHECK
     # ==================================================================
-    # 1D Gaussian mixture on GAP, K=1..6
+    # 1D Gaussian mixture on GAP, K=1..selected K
     gap_2d = GAP.reshape(-1, 1)
     gap_only_rows = []
     best_bic = np.inf
     best_k_gap = None
 
-    for K_go in [1, 2, 3, 4, 5, 6]:
+    for K_go in list(range(1, K_SEL + 1)):
         gmm = GaussianMixture(
             n_components=K_go,
             covariance_type="full",
@@ -307,15 +317,16 @@ def main():
         f.write(f"LEVEL_GAP_Pearson_r,{r},{np.nan},{float(p)},{N}\n")
 
     # ==================================================================
-    # 7. K=6 PROFILE CENTROID GEOMETRY
+    # 7. SELECTED-K PROFILE CENTROID GEOMETRY
     # ==================================================================
-    kdir6 = os.path.join(PHASE04_DIR, "K_6")
-    means_6 = pd.read_csv(os.path.join(kdir6, "profile_means.csv")).values  # (6, 2)
+    # (previously hardcoded to K=6; now uses the selected K from Phase 05)
+    kdir_sel = os.path.join(PHASE04_DIR, f"K_{K_SEL}")
+    means_sel = pd.read_csv(os.path.join(kdir_sel, "profile_means.csv")).values  # (K_SEL, 2)
 
     centroid_rows = []
-    for i in range(K):
-        for j in range(i + 1, K):
-            dist = float(np.linalg.norm(means_6[i] - means_6[j]))
+    for i in range(K_SEL):
+        for j in range(i + 1, K_SEL):
+            dist = float(np.linalg.norm(means_sel[i] - means_sel[j]))
             centroid_rows.append({
                 "profile_1": i,
                 "profile_2": j,
@@ -323,12 +334,12 @@ def main():
             })
     # Distance from origin
     origin_distances = []
-    for p in range(K):
+    for p in range(K_SEL):
         origin_distances.append({
             "profile": p,
-            "centroid_distance_from_origin": float(np.linalg.norm(means_6[p])),
-            "z_INT": float(means_6[p][0]),
-            "z_BE": float(means_6[p][1]),
+            "centroid_distance_from_origin": float(np.linalg.norm(means_sel[p])),
+            "z_INT": float(means_sel[p][0]),
+            "z_BE": float(means_sel[p][1]),
         })
     pd.DataFrame(centroid_rows).to_csv(
         os.path.join(RESULTS_DIR, "k6_centroid_geometry.csv"), index=False
@@ -338,30 +349,31 @@ def main():
     )
 
     # ==================================================================
-    # 8. K=6 PROFILE CONTRIBUTION TO GAP
+    # 8. SELECTED-K PROFILE CONTRIBUTION TO GAP
     # ==================================================================
-    labels_6 = labels_by_k[6]
-    total_var_k6 = float(GAP.var(ddof=1))
+    # (previously hardcoded to K=6; now uses the selected K from Phase 05)
+    labels_sel = labels_by_k[K_SEL]
+    total_var_sel = float(GAP.var(ddof=1))
     profile_means = []
     within_vars = []
     weights = []
-    for p in range(6):
-        mask = labels_6 == p
+    for p in range(K_SEL):
+        mask = labels_sel == p
         gap_p = GAP[mask]
         profile_means.append(float(gap_p.mean()))
         within_vars.append(float(gap_p.var(ddof=1)))
         weights.append(int(mask.sum()) / N)
     weights_arr = np.array(weights)
-    grand_mean_k6 = np.sum(weights_arr * np.array(profile_means))
-    between_var_k6 = np.sum(weights_arr * (np.array(profile_means) - grand_mean_k6)**2)
-    within_var_k6 = np.sum(weights_arr * np.array(within_vars))
+    grand_mean_sel = np.sum(weights_arr * np.array(profile_means))
+    between_var_sel = np.sum(weights_arr * (np.array(profile_means) - grand_mean_sel)**2)
+    within_var_sel = np.sum(weights_arr * np.array(within_vars))
 
-    k6_gap_var = pd.DataFrame({
+    k_gap_var = pd.DataFrame({
         "variance_component": ["between_profile", "within_profile", "total"],
-        "value": [between_var_k6, within_var_k6, total_var_k6],
+        "value": [between_var_sel, within_var_sel, total_var_sel],
     })
-    k6_gap_var.loc[len(k6_gap_var)] = ["between_over_total_pct", float(between_var_k6 / total_var_k6 * 100)] if total_var_k6 > 0 else [np.nan]
-    k6_gap_var.to_csv(
+    k_gap_var.loc[len(k_gap_var)] = ["between_over_total_pct", float(between_var_sel / total_var_sel * 100)] if total_var_sel > 0 else [np.nan]
+    k_gap_var.to_csv(
         os.path.join(RESULTS_DIR, "k6_gap_variance_explained.csv"), index=False
     )
 
@@ -370,7 +382,7 @@ def main():
     # ==================================================================
     master_rows = []
     for K in K_RANGE:
-        d = decomp_rows[K - 2]
+        d = decomp_rows[K_RANGE.index(K)]
         master_rows.append({
             "K": K,
             "between_profile_variance_GAP": d["between_profile_variance"],
@@ -391,7 +403,7 @@ def main():
     # ------------------------------------------------------------------
     # README
     # ------------------------------------------------------------------
-    readme = """# Phase 16 — Intention–Behavior Gap Profile Validation
+    readme = f"""# Phase 16 — Intention–Behavior Gap Profile Validation
 
 ## Purpose
 Determine whether observed LPA profiles represent meaningful
@@ -402,7 +414,7 @@ interpretation, no plots, no literature.
 ## Input Result Files
 - results/02_measurement/construct_scores.csv
 - results/03_gap_analysis/gap_scores.npy
-- results/04_lpa_estimation/K_{K}/posterior_probabilities.csv
+- results/04_lpa_estimation/K_{{K}}/posterior_probabilities.csv
 
 ## Formulas
 - GAP_i = z(INT_i) - z(BE_i), where z = (x - mean) / SD
@@ -420,10 +432,10 @@ interpretation, no plots, no literature.
   random_state=42, max_iter=500)
 - INDICATOR: respondent-level GAP (1D)
 - Model selection: MINIMUM BIC (corrected procedure)
-- K_go = 1..6
+- K_go = 1..{K_SEL}
 
 ## Parameters
-- N = 1166
+- N = {N}
 - SEED = 42 (explicit, documented)
 - N_INIT = 1000
 - BIC minimization (NOT maximization — historical bug corrected)
@@ -434,7 +446,7 @@ interpretation, no plots, no literature.
 - gap_variance_decomposition.csv
 - pairwise_gap_separation.csv
 - gap_only_model_comparison.csv
-- gap_only_K{1..6}.csv
+- gap_only_K{{1..{K_SEL}}}.csv
 - gap_only_selected.csv
 - level_gap_relationship.csv
 - level_gap_correlation.csv
@@ -464,7 +476,7 @@ change. No plots.
     print(f"\nGap-only model (selected by min BIC, K={best_k_gap}):")
     print(pd.DataFrame(gap_only_rows).to_string(index=False))
     print(f"\nLEVEL-GAP Pearson r = {r:.4f}, p = {p:.6f}")
-    print(f"K=6 centroid distances from origin:")
+    print(f"K={K_SEL} centroid distances from origin:")
     print(pd.DataFrame(origin_distances).to_string(index=False))
 
     print("\nOutputs:")
@@ -476,7 +488,7 @@ change. No plots.
                "k6_gap_variance_explained.csv", "phase16_master.csv", "README.md"]:
         path = os.path.join(RESULTS_DIR, fn)
         print(f"  {path} — {'OK' if os.path.exists(path) else 'MISSING'}")
-    for k in [1, 2, 3, 4, 5, 6]:
+    for k in range(1, K_SEL + 1):
         path = os.path.join(RESULTS_DIR, f"gap_only_K{k}.csv")
         print(f"  {path} — {'OK' if os.path.exists(path) else 'MISSING'}")
 

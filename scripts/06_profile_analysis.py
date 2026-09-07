@@ -3,7 +3,7 @@ Phase 06 — Profile Characterization and Gap-Profile Test
 ===========================================================
 Project: Intention–Behaviour Gap in Household Energy-Saving Behaviour
 
-Uses the selected LPA solution (K=6).
+Uses the selected LPA solution (K read dynamically from Phase 05).
 For each profile: N, percentage, mean/SD of INT, BE, and all other
 constructs (ATT, CON, SNO, COVID, PU, PEU, PO, PRI).
 

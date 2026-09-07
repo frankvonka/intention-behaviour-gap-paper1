@@ -1,0 +1,4 @@
+metric,value,source
+K6_between_over_total_pct,26.565142536389093,results/16_gap_profile_validation/gap_variance_decomposition.csv
+gap_only_min_BIC_K,6.0,results/16_gap_profile_validation/gap_only_model_comparison.csv
+LEVEL_GAP_corr,-7.340726334084667e-17,results/16_gap_profile_validation/level_gap_correlation.csv

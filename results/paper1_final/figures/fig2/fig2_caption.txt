@@ -1,0 +1,1 @@
+Figure 2. Distribution of the respondent-level standardized intention-behaviour gap, GAP = z(INT) - z(BE) (N = 1,166). Mean approximately 0, SD = 0.8349, range [-3.520, +2.827]. Both positive (INT > BE) and negative (BE > INT) discrepancies occur.

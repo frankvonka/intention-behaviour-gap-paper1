@@ -22,8 +22,8 @@ P18 = "results/18_profile_predictors"
 P18B = "results/18B_predictor_multicollinearity"
 P20 = "results/20_evidence_extraction"
 
-K = 6
-N = 1166
+K = int(pd.read_csv(os.path.join("results/05_lpa_selection", "selected_model.csv"))["selected_K"].iloc[0])
+N = int(pd.read_csv("results/01_data_inspection/data_dimensions.csv")["N_rows"].iloc[0])
 
 
 def ensure_dir(d):
@@ -50,13 +50,18 @@ def main():
 
     fit = pd.read_csv(os.path.join(P04, "model_fit.csv"))
     bic_min_K = int(fit.loc[fit["BIC"].idxmin(), "K"])
-    k6_bic = float(fit.loc[fit["K"] == 6, "BIC"].iloc[0])
+    k_sel_bic = float(fit.loc[fit["K"] == K, "BIC"].iloc[0])
+    fit_k_max = int(fit["K"].max())
+    # N is the sample size from the same fit data (number of rows in the
+    # indicator file). Read it from the frozen result, not a literal.
+    n_total = int(pd.read_csv(os.path.join("results/02_measurement", "construct_scores.csv")).shape[0])
+    N = n_total
 
     kdir = os.path.join(P04, f"K_{K}")
     post = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
     means = pd.read_csv(os.path.join(kdir, "profile_means.csv"))
     sizes = pd.read_csv(os.path.join(kdir, "profile_sizes.csv"))
-    prob_cols = [c for c in post.columns if c.startswith("prob_")]
+    prob_cols = [c for c in post.columns if c.startswith("post_profile_")]
     maxprob = post[prob_cols].max(axis=1).values
     labels = post["assigned_class"].values
     if "profile" in means.columns:
@@ -77,12 +82,19 @@ def main():
 
     n_int_gt_be_profiles = sum(1 for p in k6_profiles if p["diff"] > 0)
     n_be_gt_int_profiles = sum(1 for p in k6_profiles if p["diff"] < 0)
+    # Substantive-direction counts: |z-gap| >= 0.10 (near-balanced profiles
+    # excluded). Calibrated so that only clearly directional profiles carry
+    # the claim. Which profiles are near-balanced is computed from the data.
+    SUBST_GAP = 0.10
+    n_int_subst = sum(1 for p in k6_profiles if p["diff"] >= SUBST_GAP)
+    n_be_subst = sum(1 for p in k6_profiles if p["diff"] <= -SUBST_GAP)
+    n_balanced = sum(1 for p in k6_profiles if abs(p["diff"]) < SUBST_GAP)
 
     cfg = pd.read_csv(os.path.join(P14, "configuration_stability.csv"))
     boot = pd.read_csv(os.path.join(P14, "bootstrap_results.csv"))
 
     am = pd.read_csv(os.path.join(P17, "phase17_master.csv"))
-    am_ref = am[am["specification"] == "reference_k6"].iloc[0]
+    am_ref = am[am["specification"] == f"reference_K{K}"].iloc[0]
     seed_rows = am[am["specification"].str.startswith("seed_")]
     seed_dist_max = float(seed_rows["total_matching_distance"].max()) if len(seed_rows) else np.nan
 
@@ -131,8 +143,10 @@ def main():
     # ------------------------------------------------------------------
     if int_be_r > 0 and int_be_p < 0.001:
         add("C1", "INT and BE are positively associated.", "SUPPORTED",
-            "02", P02, "pearson_r", f"r={int_be_r:.4f}, p={int_be_p:.2e}",
-            "Pearson r > 0 with p < 0.001 reported in Phase 02.")
+            "02", P02, "pearson_r", f"r={int_be_r:.4f}, p<0.001 (exact p={int_be_p:.2e})",
+            "Pearson r > 0 with p < 0.001 reported in Phase 02. "
+            "Report as p<0.001 in manuscripts; the exact tiny value is a "
+            "floating-point artifact, not a meaningful precision.")
     else:
         add("C1", "INT and BE are positively associated.", "NOT_SUPPORTED",
             "02", P02, "pearson_r", f"r={int_be_r:.4f}, p={int_be_p:.2e}",
@@ -191,83 +205,109 @@ def main():
         "04/06", kdir, "n_profiles_INT_gt_BE",
         int(n_int_gt_be_profiles),
         f"{n_int_gt_be_profiles} profile(s) show mean INT > mean BE.")
+    # C6b: substantive-direction companion (honest framing guard)
+    _near = "; ".join(f"P{p['profile']} (z-gap {p['diff']:+.3f})" for p in k6_profiles if abs(p["diff"]) < SUBST_GAP)
+    _near_str = _near if _near else "none"
+    add("C6b", "Directional story rests on clearly-separated profiles (|z-gap|>=0.10).",
+        "SUPPORTED_WITH_CAVEAT" if n_balanced > 0 else "SUPPORTED",
+        "04/06", kdir, "substantive_direction_counts",
+        f"{n_int_subst} clear INT>BE, {n_be_subst} clear BE>INT, {n_balanced} near-balanced(|z-gap|<0.10)",
+        f"{_near_str} near balance and must not be counted as directional evidence.")
 
     # ------------------------------------------------------------------
-    # 7. All six profiles are equally stable.
+    # 7. All selected-K profiles are equally stable.
     # ------------------------------------------------------------------
     if len(cfg) >= K:
         pcts = cfg["pct_INT_gt_BE"].fillna(0).tolist() + \
                cfg["pct_BE_gt_INT"].fillna(0).tolist()
         spread = float(max(pcts) - min(pcts)) if pcts else np.nan
         if spread < 5.0:
-            add("C7", "All six profiles are equally stable.",
+            add("C7", f"All {K} profiles are equally stable.",
                 "SUPPORTED_WITH_CAVEAT",
                 "14", P14, "stability_pct_spread",
                 float(spread),
                 f"Stability proportions differ by {spread:.2f} percentage points across profiles.")
         else:
-            add("C7", "All six profiles are equally stable.",
+            add("C7", f"All {K} profiles are equally stable.",
                 "NOT_SUPPORTED", "14", P14, "stability_pct_spread",
                 float(spread),
                 f"Stability proportions vary by {spread:.2f} percentage points; profiles are not equally stable.")
     else:
-        add("C7", "All six profiles are equally stable.",
+        add("C7", f"All {K} profiles are equally stable.",
             "NOT_SUPPORTED", "14", P14, "stability_data", "insufficient",
             "Stability data not available for all profiles.")
 
     # ------------------------------------------------------------------
-    # 8. Profile 5 has stable INT-BE direction.
+    # 8. Near-balanced profile has stable INT-BE direction.
     # ------------------------------------------------------------------
-    p5 = next((p for p in k6_profiles if p["profile"] == 5), None)
-    if p5 is not None and p5["diff"] != 0:
-        cfg5 = cfg[cfg["profile"] == 5]
-        if len(cfg5) > 0:
-            if p5["diff"] > 0:
-                pct_dir = float(cfg5["pct_INT_gt_BE"].iloc[0])
+    # Target the profile with the smallest |z-gap| (most near-balanced); under
+    # K=6 it is P5, under K=7 it is P4.
+    bal_profile = min(k6_profiles, key=lambda p: abs(p["diff"])) if k6_profiles else None
+    if bal_profile is not None and bal_profile["diff"] != 0:
+        cfg_b = cfg[cfg["profile"] == bal_profile["profile"]]
+        if len(cfg_b) > 0:
+            if bal_profile["diff"] > 0:
+                pct_dir = float(cfg_b["pct_INT_gt_BE"].iloc[0])
             else:
-                pct_dir = float(cfg5["pct_BE_gt_INT"].iloc[0])
+                pct_dir = float(cfg_b["pct_BE_gt_INT"].iloc[0])
             if pct_dir >= 80.0:
-                add("C8", "Profile 5 has stable INT-BE direction across bootstraps.",
+                add("C8", f"Profile {bal_profile['profile']} has stable INT-BE direction across bootstraps.",
                     "SUPPORTED", "14", P14, "configuration_stability_pct",
                     float(pct_dir),
                     f"Direction-consistency in {pct_dir:.2f}% of bootstraps.")
             else:
-                add("C8", "Profile 5 has stable INT-BE direction across bootstraps.",
+                add("C8", f"Profile {bal_profile['profile']} has stable INT-BE direction across bootstraps.",
                     "SUPPORTED_WITH_CAVEAT", "14", P14,
                     "configuration_stability_pct", float(pct_dir),
                     f"Direction-consistency in only {pct_dir:.2f}% of bootstraps.")
         else:
-            add("C8", "Profile 5 has stable INT-BE direction.",
+            add("C8", f"Profile {bal_profile['profile']} has stable INT-BE direction.",
                 "NOT_SUPPORTED", "14", P14, "configuration_stability",
-                "missing", "No bootstrap record for profile 5.")
+                "missing", f"No bootstrap record for profile {bal_profile['profile']}.")
     else:
-        add("C8", "Profile 5 has stable INT-BE direction.",
-            "NOT_SUPPORTED", "04", kdir, "profile_5_diff", 0.0,
-            "Profile 5 INT-BE difference is zero.")
+        add("C8", "Near-balanced profile has stable INT-BE direction.",
+            "NOT_SUPPORTED", "04", kdir, "profile_diff", 0.0,
+            "INT-BE difference is zero.")
 
     # ------------------------------------------------------------------
-    # 9. K=6 is the minimum-BIC solution under the primary specification.
+    # 9. Selected K is the minimum-BIC solution.
     # ------------------------------------------------------------------
     if bic_min_K == K:
-        add("C9", "K=6 is the minimum-BIC solution under the primary specification.",
-            "SUPPORTED", "04/05", P04, "min_BIC_K", int(bic_min_K),
-            f"Minimum BIC across K=2..6 is at K={bic_min_K} (BIC={k6_bic:.4f}).")
+        add("C9", f"K={K} is the minimum-BIC solution among the estimated K values.",
+            "SUPPORTED", "04/05", P04, f"min_BIC_K_windowed_2_to_{fit_k_max}", int(bic_min_K),
+            f"Minimum BIC across K={int(fit['K'].min())}..{fit_k_max} is at K={bic_min_K} (BIC={k_sel_bic:.4f}).")
     else:
-        add("C9", "K=6 is the minimum-BIC solution under the primary specification.",
-            "NOT_SUPPORTED", "04/05", P04, "min_BIC_K", int(bic_min_K),
-            f"Minimum BIC is at K={bic_min_K}, not K=6.")
+        add("C9", f"K={K} is the minimum-BIC solution among the estimated K values.",
+            "NOT_SUPPORTED", "04/05", P04, f"min_BIC_K_windowed_2_to_{fit_k_max}", int(bic_min_K),
+            f"Minimum BIC is at K={bic_min_K}, not K={K}.")
+    # C9b: degeneracy guard companion claim (informational; always recorded)
+    try:
+        import os as _os
+        _ext = pd.read_csv("results/paper1_strengthening/k_extended_model_comparison.csv")
+        _kmax_bic = float(_ext.loc[_ext["K"] == int(_ext["K"].max()), "BIC"].iloc[0])
+        _floor = str((_ext["any_component_at_reg_floor"].tolist()
+                      if "any_component_at_reg_floor" in _ext.columns else "unknown"))
+        add("C9b", f"BIC keeps falling for K>{K} under variance-collapse degeneracy.",
+            "SUPPORTED_WITH_CAVEAT", "Task1", "results/paper1_strengthening",
+            f"BIC_K{int(_ext['K'].max())}_vs_K{K}", f"K{int(_ext['K'].max())}_BIC={_kmax_bic:.2f} < K{K}_BIC={k_sel_bic:.2f}; floor_flags={_floor}",
+            f"Higher-K BIC gains may coincide with reg-floor components; BIC alone cannot select K.")
+    except Exception as _e:
+        add("C9b", f"BIC keeps falling for K>{K} under variance-collapse degeneracy.",
+            "NOT_SUPPORTED", "Task1", "results/paper1_strengthening",
+            f"BIC_K{fit_k_max}_vs_K{K}", f"unavailable: {_e}",
+            "Extended comparison not yet run; run Task 1 first.")
 
     # ------------------------------------------------------------------
-    # 10. K=6 is perfectly stable across all alternative specifications.
+    # 10. Selected K is perfectly stable across all alternative specifications.
     # ------------------------------------------------------------------
     seed_dist_max_val = float(am["total_matching_distance"].max())
     if seed_dist_max_val < 0.01:
-        add("C10", "K=6 is perfectly stable across all alternative specifications.",
+        add("C10", f"K={K} is perfectly stable across all alternative specifications.",
             "SUPPORTED", "17", P17, "max_matching_distance",
             float(seed_dist_max_val),
             f"Maximum matching distance = {seed_dist_max_val:.4f}.")
     else:
-        add("C10", "K=6 is perfectly stable across all alternative specifications.",
+        add("C10", f"K={K} is perfectly stable across all alternative specifications.",
             "NOT_SUPPORTED", "17", P17, "max_matching_distance",
             float(seed_dist_max_val),
             f"Maximum matching distance = {seed_dist_max_val:.4f} (non-zero).")
@@ -297,15 +337,15 @@ def main():
     # 13. The data support heterogeneity in the INT-BE relationship.
     # ------------------------------------------------------------------
     gvd = pd.read_csv(os.path.join(P16, "gap_variance_decomposition.csv"))
-    k6_bt = float(gvd.loc[gvd["K"] == 6, "between_over_total"].iloc[0])
-    if (n_int_gt_be_profiles >= 1 and n_be_gt_int_profiles >= 1) and k6_bt > 0:
+    k_sel_bt = float(gvd.loc[gvd["K"] == K, "between_over_total"].iloc[0])
+    if (n_int_gt_be_profiles >= 1 and n_be_gt_int_profiles >= 1) and k_sel_bt > 0:
         add("C13", "The data support heterogeneity in the intention-behavior relationship.",
             "SUPPORTED_WITH_CAVEAT", "04/06/16",
-            P16, "between_over_total_K6", float(k6_bt),
-            f"Between-profile proportion of GAP variance = {k6_bt:.4f}; substantial within-profile variance remains.")
+            P16, f"between_over_total_K{K}", float(k_sel_bt),
+            f"Between-profile proportion of GAP variance = {k_sel_bt:.4f}; substantial within-profile variance remains.")
     else:
         add("C13", "The data support heterogeneity in the INT-BE relationship.",
-            "NOT_SUPPORTED", "16", P16, "between_over_total_K6", float(k6_bt),
+            "NOT_SUPPORTED", "16", P16, f"between_over_total_K{K}", float(k_sel_bt),
             "Directional evidence not present.")
 
     # ------------------------------------------------------------------
@@ -316,26 +356,26 @@ def main():
         "Cross-sectional data cannot establish temporal causality.")
 
     # ------------------------------------------------------------------
-    # 15. K=6 reproduces with a specific primary BIC value.
+    # 15. Selected K reproduces with its specific primary BIC value.
     # ------------------------------------------------------------------
-    add("C15", "K=6 reproduces with the specific primary BIC value (2129.1734).",
+    add("C15", f"K={K} reproduces with its specific primary BIC value ({k_sel_bic:.4f}).",
         "SUPPORTED", "19", "results/19_final_audit",
-        "K6_BIC_reproduced", float(k6_bic),
-        f"Phase 19 audit reproduces K=6 BIC = {k6_bic:.4f}.")
+        f"K{K}_BIC_reproduced", float(k_sel_bic),
+        f"Phase 19 audit reproduces K={K} BIC = {k_sel_bic:.4f}.")
 
     # ------------------------------------------------------------------
-    # 16. Profile sizes sum to 1166.
+    # 16. Profile sizes sum to N.
     # ------------------------------------------------------------------
     total_n = sum(p["N"] for p in k6_profiles)
     if total_n == N:
-        add("C16", "K=6 profile sizes sum to N = 1166.",
+        add("C16", f"K={K} profile sizes sum to N = {N}.",
             "SUPPORTED", "19", "results/19_final_audit",
             "sum_profile_N", int(total_n),
             f"Sum of profile sizes = {total_n} = N.")
     else:
-        add("C16", "K=6 profile sizes sum to N = 1166.",
+        add("C16", f"K={K} profile sizes sum to N = {N}.",
             "NOT_SUPPORTED", "04/19", P04, "sum_profile_N", int(total_n),
-            f"Sum of profile sizes = {total_n}, expected 1166.")
+            f"Sum of profile sizes = {total_n}, expected {N}.")
 
     # ------------------------------------------------------------------
     # 17. INT-BE correlation confidence interval excludes 0.
@@ -352,17 +392,17 @@ def main():
             "CI includes 0.")
 
     # ------------------------------------------------------------------
-    # 18. Stability of all K=6 profiles.
+    # 18. Stability of all selected-K profiles.
     # ------------------------------------------------------------------
     n_boot = len(boot)
     n_conv = int(boot["converged"].sum()) if "converged" in boot.columns else 0
     if n_boot > 0 and n_conv == n_boot:
-        add("C18", "All bootstrap replications of K=6 converged.",
+        add("C18", f"All bootstrap replications of K={K} converged.",
             "SUPPORTED", "14", P14, "bootstrap_converged",
             f"{n_conv}/{n_boot}",
             f"All {n_boot} bootstrap replications converged.")
     else:
-        add("C18", "All bootstrap replications of K=6 converged.",
+        add("C18", f"All bootstrap replications of K={K} converged.",
             "NOT_SUPPORTED", "14", P14, "bootstrap_converged",
             f"{n_conv}/{n_boot}",
             f"{n_boot - n_conv} of {n_boot} replications did not converge.")
@@ -379,7 +419,7 @@ def main():
     # 20. INT-BE relationship is uniformly positive across all profiles.
     # ------------------------------------------------------------------
     all_positive = all(p["diff"] >= 0 for p in k6_profiles)
-    add("C20", "INT-BE relationship is uniformly positive across all K=6 profiles.",
+    add("C20", f"INT-BE relationship is uniformly positive across all K={K} profiles.",
         "NOT_SUPPORTED" if not all_positive else "SUPPORTED",
         "04/06", kdir, "profile_diffs",
         "; ".join(f"P{p['profile']}={p['diff']:.4f}" for p in k6_profiles),

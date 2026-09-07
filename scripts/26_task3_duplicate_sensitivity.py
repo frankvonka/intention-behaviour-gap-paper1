@@ -1,12 +1,15 @@
 """
-Reviewer-fix pass — Task 3: Duplicate-row sensitivity (N=1124 excluding 42 dups).
+Reviewer-fix pass — Task 3: Duplicate-row sensitivity (full sample vs unique rows).
 
 Procedure:
-  1. Load data.xls; identify the 42 all-column-duplicate rows.
-  2. Recompute INT-BE Pearson r on the 1124 unique rows.
-  3. Recompute z(INT)-z(BE) GAP stats on the 1124 unique rows.
-  4. Re-estimate K=6 LPA on the 1124 unique rows (same primary spec).
-  5. Compare all three to the frozen values.
+  1. Load data.xls; identify the all-column-duplicate rows.
+  2. Recompute INT-BE Pearson r on the unique rows.
+  3. Recompute z(INT)-z(BE) GAP stats on the unique rows.
+  4. Re-estimate the primary LPA on the unique rows, where the primary K is the
+     selected K from Phase 05 (results/05_lpa_selection/selected_model.csv).
+  5. Compare all three to the frozen values, which are LOADED from the frozen
+     result files (results/01_data_inspection, results/02_measurement,
+     results/03_gap_analysis, results/04_lpa_estimation) — no hardcoded numbers.
 Saves results/paper1_strengthening/duplicate_sensitivity.csv.
 """
 import os
@@ -22,7 +25,8 @@ SEED = 42
 N_INIT = 1000
 MAX_ITER = 500
 REG_COVAR = 1e-6
-K_PRIMARY = 6
+# K_PRIMARY is read at the top of main() from the Phase 05 selection output.
+SELECTED_MODEL_CSV = "results/05_lpa_selection/selected_model.csv"
 CONSTRUCTS = {
     "INT": ["INT1", "INT2", "INT3"],
     "BE":  ["BE1", "BE2", "BE3", "BE4"],
@@ -48,7 +52,7 @@ def safe_entropy(posterior):
     log_k = np.log(K)
     if log_k == 0:
         return 0.0
-    return float(1.0 - np.sum(p * np.log(p)) / (n * log_k))
+    return float(-np.sum(p * np.log(p)) / (n * log_k))
 
 
 def count_params_full(K, n_features):
@@ -58,6 +62,10 @@ def count_params_full(K, n_features):
 def main():
     ensure_dir(RESULTS_DIR)
     np.random.seed(SEED)
+
+    # ---- Primary K comes from Phase 05 model selection ----
+    K_PRIMARY = int(pd.read_csv(SELECTED_MODEL_CSV)["selected_K"].iloc[0])
+    print(f"Primary K (from {SELECTED_MODEL_CSV}): K = {K_PRIMARY}")
 
     # ---- Load and identify duplicates ----
     df = pd.read_excel(DATA_PATH, sheet_name=0).copy()
@@ -95,7 +103,7 @@ def main():
         "pct_BE_gt_INT": n_be_gt / len(gap_u) * 100,
     }
 
-    # ---- LPA K=6 on the unique sample (primary spec) ----
+    # ---- LPA at the selected K on the unique sample (primary spec) ----
     X = np.column_stack([z_INT.values, z_BE.values])
     gmm = GaussianMixture(
         n_components=K_PRIMARY,
@@ -145,22 +153,55 @@ def main():
     profile_df = pd.DataFrame(profile_rows)
     profile_df.to_csv(os.path.join(RESULTS_DIR, "duplicate_sensitivity_profiles.csv"), index=False)
 
-    # ---- Frozen values (from results/paper1_final + temp.md) ----
+    # ---- Frozen values, LOADED from the frozen result files (no literals) ----
+    dims = pd.read_csv("results/01_data_inspection/data_dimensions.csv")
+    frozen_N_full = int(dims["N_rows"].iloc[0])
+
+    dupinfo = pd.read_csv("results/01_data_inspection/duplicate_information.csv")
+    frozen_n_dup = int(dupinfo.loc[dupinfo["check"] == "all_columns", "n_duplicates"].iloc[0])
+    frozen_N_unique = frozen_N_full - frozen_n_dup
+
+    corr = pd.read_csv("results/02_measurement/int_be_correlation.csv").iloc[0]
+    frozen_r = float(corr["r"])
+    frozen_p = float(corr["p"])
+    frozen_ci_lo = float(corr["CI95_lower"])
+    frozen_ci_hi = float(corr["CI95_upper"])
+
+    gap_csv = pd.read_csv("results/03_gap_analysis/gap_statistics.csv")
+    frozen_gap = dict(zip(gap_csv["statistic"], gap_csv["value"].astype(float)))
+
+    fit = pd.read_csv("results/04_lpa_estimation/model_fit.csv")
+    fit_k = fit.loc[fit["K"] == K_PRIMARY].iloc[0]
+    frozen_K_BIC = float(fit_k["BIC"])
+    frozen_K_LL = float(fit_k["log_likelihood"])
+    frozen_K_entropy = float(fit_k["entropy"])
+
+    sizes_csv = pd.read_csv(f"results/04_lpa_estimation/K_{K_PRIMARY}/profile_sizes.csv")
+    frozen_sizes = [int(v) for v in sizes_csv["size"].tolist()]
+    frozen_K_min_class_N = int(min(frozen_sizes))
+
+    post_csv = pd.read_csv(f"results/04_lpa_estimation/K_{K_PRIMARY}/posterior_probabilities.csv")
+    post_cols = [c for c in post_csv.columns if c.startswith("post_profile_")]
+    frozen_K_mean_max_posterior = float(post_csv[post_cols].max(axis=1).mean())
+
     FROZEN = {
-        "N_full": 1166,
-        "n_duplicates": 42,
-        "N_unique": 1124,
-        "r": 0.651458,
-        "p": 8.83e-142,
-        "ci_lo": 0.6171,
-        "ci_hi": 0.6833,
-        "gap_mean": -4.875e-16,
-        "gap_SD": 0.834916,
-        "gap_pct_INT_gt_BE": 44.94,
-        "gap_pct_BE_gt_INT": 55.06,
-        "K6_BIC": 2129.17,
-        "K6_LL": -941.01,
-        "K6_class_sizes_full": [124, 377, 262, 90, 54, 259],
+        "N_full": frozen_N_full,
+        "n_duplicates": frozen_n_dup,
+        "N_unique": frozen_N_unique,
+        "r": frozen_r,
+        "p": frozen_p,
+        "ci_lo": frozen_ci_lo,
+        "ci_hi": frozen_ci_hi,
+        "gap_mean": frozen_gap["mean"],
+        "gap_SD": frozen_gap["SD"],
+        "gap_pct_INT_gt_BE": frozen_gap["positive_gap_pct"],
+        "gap_pct_BE_gt_INT": frozen_gap["negative_gap_pct"],
+        f"K{K_PRIMARY}_BIC": frozen_K_BIC,
+        f"K{K_PRIMARY}_LL": frozen_K_LL,
+        f"K{K_PRIMARY}_entropy": frozen_K_entropy,
+        f"K{K_PRIMARY}_class_sizes_full": frozen_sizes,
+        f"K{K_PRIMARY}_min_class_N": frozen_K_min_class_N,
+        f"K{K_PRIMARY}_mean_max_posterior": frozen_K_mean_max_posterior,
     }
 
     out_rows = [
@@ -175,17 +216,17 @@ def main():
         {"metric": "gap_SD", "frozen": FROZEN["gap_SD"], "unique_sample": gap_stats["SD"], "match": bool(np.isclose(gap_stats["SD"], FROZEN["gap_SD"], atol=5e-3))},
         {"metric": "pct_INT_gt_BE", "frozen": FROZEN["gap_pct_INT_gt_BE"], "unique_sample": gap_stats["pct_INT_gt_BE"], "match": bool(abs(gap_stats["pct_INT_gt_BE"] - FROZEN["gap_pct_INT_gt_BE"]) < 1.0)},
         {"metric": "pct_BE_gt_INT", "frozen": FROZEN["gap_pct_BE_gt_INT"], "unique_sample": gap_stats["pct_BE_gt_INT"], "match": bool(abs(gap_stats["pct_BE_gt_INT"] - FROZEN["gap_pct_BE_gt_INT"]) < 1.0)},
-        {"metric": "K6_BIC", "frozen": FROZEN["K6_BIC"], "unique_sample": BIC, "match": bool(np.isclose(BIC, FROZEN["K6_BIC"], atol=5))},
-        {"metric": "K6_log_likelihood", "frozen": FROZEN["K6_LL"], "unique_sample": LL, "match": bool(np.isclose(LL, FROZEN["K6_LL"], atol=5))},
-        {"metric": "K6_entropy", "frozen": 1.1418, "unique_sample": entropy, "match": bool(np.isclose(entropy, 1.1418, atol=0.05))},
-        {"metric": "K6_min_class_N", "frozen": 54, "unique_sample": lpa_stats["min_class_N"], "match": "compare profile tables"},
-        {"metric": "K6_mean_max_posterior", "frozen": 0.8917, "unique_sample": lpa_stats["mean_max_posterior"], "match": bool(np.isclose(lpa_stats["mean_max_posterior"], 0.8917, atol=0.05))},
+        {"metric": f"K{K_PRIMARY}_BIC", "frozen": FROZEN[f"K{K_PRIMARY}_BIC"], "unique_sample": BIC, "match": bool(np.isclose(BIC, FROZEN[f"K{K_PRIMARY}_BIC"], atol=5))},
+        {"metric": f"K{K_PRIMARY}_log_likelihood", "frozen": FROZEN[f"K{K_PRIMARY}_LL"], "unique_sample": LL, "match": bool(np.isclose(LL, FROZEN[f"K{K_PRIMARY}_LL"], atol=5))},
+        {"metric": f"K{K_PRIMARY}_entropy", "frozen": FROZEN[f"K{K_PRIMARY}_entropy"], "unique_sample": entropy, "match": bool(np.isclose(entropy, FROZEN[f"K{K_PRIMARY}_entropy"], atol=0.05))},
+        {"metric": f"K{K_PRIMARY}_min_class_N", "frozen": FROZEN[f"K{K_PRIMARY}_min_class_N"], "unique_sample": lpa_stats["min_class_N"], "match": "compare profile tables"},
+        {"metric": f"K{K_PRIMARY}_mean_max_posterior", "frozen": FROZEN[f"K{K_PRIMARY}_mean_max_posterior"], "unique_sample": lpa_stats["mean_max_posterior"], "match": bool(np.isclose(lpa_stats["mean_max_posterior"], FROZEN[f"K{K_PRIMARY}_mean_max_posterior"], atol=0.05))},
     ]
     out = pd.DataFrame(out_rows)
     out.to_csv(os.path.join(RESULTS_DIR, "duplicate_sensitivity.csv"), index=False)
 
     print("=" * 70)
-    print("TASK 3 — DUPLICATE-ROW SENSITIVITY (N_unique = 1124)")
+    print(f"TASK 3 — DUPLICATE-ROW SENSITIVITY (N_unique = {N_unique}, K = {K_PRIMARY})")
     print("=" * 70)
     print(f"Full sample: N = {N_full} ({n_dup} duplicates identified, N_unique = {N_unique})")
     print()
@@ -199,7 +240,7 @@ def main():
     for k, v in gap_stats.items():
         print(f"  {k}: {v}")
     print()
-    print("K=6 LPA (unique sample, full covariance, n_init=1000, seed=42):")
+    print(f"K={K_PRIMARY} LPA (unique sample, full covariance, n_init=1000, seed=42):")
     for k, v in lpa_stats.items():
         print(f"  {k}: {v}")
     print()

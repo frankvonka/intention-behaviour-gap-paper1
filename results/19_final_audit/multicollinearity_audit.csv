@@ -1,0 +1,8 @@
+metric,value,source
+VIF_min,1.9938715377993597,results/18B_predictor_multicollinearity/vif_full.csv
+VIF_max,67.44221815766522,results/18B_predictor_multicollinearity/vif_full.csv
+VIF_predictor_max,COVID,results/18B_predictor_multicollinearity/vif_full.csv
+condition_number_corr,18.40200541547924,results/18B_predictor_multicollinearity/condition_diagnostics.csv
+smallest_eigenvalue,0.2608860167923332,results/18B_predictor_multicollinearity/condition_diagnostics.csv
+n_pairs_abs_r_ge_0.70,1,results/18B_predictor_multicollinearity/high_correlation_pairs.csv
+max_abs_beta_diff_vs_phase18,2.220446049250313e-16,results/18B_predictor_multicollinearity/phase18B_master.csv

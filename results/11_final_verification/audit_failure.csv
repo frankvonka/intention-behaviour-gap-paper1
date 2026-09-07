@@ -1,0 +1,2 @@
+category,check,expected,observed,status
+predictors,CI_lower,0.0,0.001953125,FAIL

@@ -1,0 +1,13 @@
+statistic,value
+N,1166.0
+mean,-4.875078804528989e-16
+SD,0.8349160638620378
+median,-0.11913422995160272
+min,-3.5200188091258813
+max,2.827129474102165
+positive_gap_count,524.0
+negative_gap_count,642.0
+zero_gap_count,0.0
+positive_gap_pct,44.93996569468268
+negative_gap_pct,55.06003430531733
+zero_gap_pct,0.0

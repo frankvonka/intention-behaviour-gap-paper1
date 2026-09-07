@@ -1,0 +1,17 @@
+phase,variable,value_A,value_B,abs_diff,status
+P01_dimensions,N,1166,1166,0,PASS
+P02_scores,N,1166,1166,0,PASS
+P04_K7_labels,N,1166,1166,0,PASS
+P04_fit_min_BIC,K,7,7,0,PASS
+P18_predictor,K,7,7,0,PASS
+P02_definitions,n_constructs,10,10,0,PASS
+P18,reference_profile,0,0,0,PASS
+P18,n_tests,78,78,0,PASS
+P18,n_predictors,13,13,0,PASS
+P04_vs_P13_size_profile_0,profile_N,281,281,0,PASS
+P04_vs_P13_size_profile_1,profile_N,125,125,0,PASS
+P04_vs_P13_size_profile_2,profile_N,108,108,0,PASS
+P04_vs_P13_size_profile_3,profile_N,264,264,0,PASS
+P04_vs_P13_size_profile_4,profile_N,245,245,0,PASS
+P04_vs_P13_size_profile_5,profile_N,70,70,0,PASS
+P04_vs_P13_size_profile_6,profile_N,73,73,0,PASS

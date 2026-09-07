@@ -1,0 +1,25 @@
+criterion,selected_K,value,rule
+reg_floor_component_caveat,4,1e-06,"min component eigenvalue <= 1.5*reg_covar; reported as a caveat, does not exclude the fit from BIC selection"
+reg_floor_component_caveat,5,1e-06,"min component eigenvalue <= 1.5*reg_covar; reported as a caveat, does not exclude the fit from BIC selection"
+reg_floor_component_caveat,6,1e-06,"min component eigenvalue <= 1.5*reg_covar; reported as a caveat, does not exclude the fit from BIC selection"
+reg_floor_component_caveat,7,1e-06,"min component eigenvalue <= 1.5*reg_covar; reported as a caveat, does not exclude the fit from BIC selection"
+BIC_minimum,7,1616.0232002565717,BIC is minimized (NOT maximized)
+AIC_minimum,7,1408.5084912132438,AIC is minimized
+entropy,2,0.599786309643466,"in [0,1]; higher = better separated"
+entropy,3,0.6110818440435285,"in [0,1]; higher = better separated"
+entropy,4,0.4236446643838081,"in [0,1]; higher = better separated"
+entropy,5,0.3416248967605995,"in [0,1]; higher = better separated"
+entropy,6,0.1418497523045633,"in [0,1]; higher = better separated"
+entropy,7,0.0991256569666002,"in [0,1]; higher = better separated"
+smallest_class_pct,2,25.300171526586624,>1% generally acceptable
+smallest_class_pct,3,7.547169811320755,>1% generally acceptable
+smallest_class_pct,4,10.634648370497427,>1% generally acceptable
+smallest_class_pct,5,4.802744425385934,>1% generally acceptable
+smallest_class_pct,6,4.631217838765009,>1% generally acceptable
+smallest_class_pct,7,6.003430531732419,>1% generally acceptable
+pct_maxprob_lt_50,2,0.0,<20% of cases with max posterior < 0.50 is acceptable
+pct_maxprob_lt_50,3,6.174957118353345,<20% of cases with max posterior < 0.50 is acceptable
+pct_maxprob_lt_50,4,3.8593481989708405,<20% of cases with max posterior < 0.50 is acceptable
+pct_maxprob_lt_50,5,12.69296740994854,<20% of cases with max posterior < 0.50 is acceptable
+pct_maxprob_lt_50,6,0.0,<20% of cases with max posterior < 0.50 is acceptable
+pct_maxprob_lt_50,7,0.0,<20% of cases with max posterior < 0.50 is acceptable

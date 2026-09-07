@@ -1,0 +1,11 @@
+threshold,value
+mean_max_posterior,
+median_max_posterior,
+pct_>=0.90,0.0
+pct_<0.90,0.0
+pct_>=0.80,0.0
+pct_<0.80,0.0
+pct_>=0.70,0.0
+pct_<0.70,0.0
+pct_>=0.50,0.0
+pct_<0.50,0.0

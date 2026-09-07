@@ -1,0 +1,6 @@
+metric,original,replicated,difference
+log_likelihood,-663.2542456066219,-663.2542456066219,0.0
+BIC,1616.0232002565715,1616.0232002565717,2.2737367544323206e-13
+AIC,1408.5084912132438,1408.5084912132438,0.0
+profile_sizes_equal,"[70, 73, 108, 125, 245, 264, 281]","[70, 73, 108, 125, 245, 264, 281]",True
+profile_means_equal,see k6_reproduction.csv,see k6_reproduction.csv,

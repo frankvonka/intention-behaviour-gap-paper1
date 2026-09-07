@@ -10,6 +10,10 @@ Mirrors scripts/04_lpa_estimation.py run_gmm() EXACTLY for K=2..10:
 This does NOT modify the original Phase 04 evidence. New outputs go under
 results/paper1_strengthening/.
 
+Note: the primary K is the selected K from Phase 05 model selection
+(results/05_lpa_selection/selected_model.csv); K=2..10 here is the extended
+comparison for that selection and its robustness, not a primary-K choice.
+
 Hard stop: produces k_extended_model_comparison.csv and K/ profile tables.
 """
 import os
@@ -39,7 +43,7 @@ def safe_entropy(posterior):
     log_k = np.log(K)
     if log_k == 0:
         return 0.0
-    return float(1.0 - np.sum(p * np.log(p)) / (n * log_k))
+    return float(-np.sum(p * np.log(p)) / (n * log_k))
 
 
 def count_params_full(K, n_features):
@@ -117,10 +121,13 @@ def main():
         os.makedirs(kdir, exist_ok=True)
         per_k_dirs[K] = kdir
 
+        _sizes = np.asarray(sizes, dtype=int)
         profile = pd.DataFrame({
             "profile": range(K),
-            "size": sizes,
-            "proportion": res["weights"],
+            "size": _sizes,
+            "assigned_share": _sizes / N,
+            "weight": np.array(res["weights"], dtype=float),
+            "proportion_WEIGHT_NOT_SHARE": np.array(res["weights"], dtype=float),
             "mean_z_INT": np.array(res["means"])[:, 0],
             "mean_z_BE": np.array(res["means"])[:, 1],
         })
@@ -139,7 +146,36 @@ def main():
               f"entropy={res['entropy']:.4f}, min_N={int(sizes.min())}, sizes={sizes.tolist()}")
 
     fit_df = pd.DataFrame(rows)
+
+    # ---- Degeneracy guard (reviewer fix) ----
+    # Full-covariance GMM on Likert ceiling spikes can inflate LL via
+    # near-singular covariances. For each K, record the minimum covariance
+    # eigenvalue, whether any component sits at the reg_covar floor, and a
+    # well-behaved flag. BIC alone must NOT select K.
+    import numpy.linalg as _la
+    _degen = []
+    for K in K_RANGE:
+        kdir = per_k_dirs[K]
+        with open(os.path.join(kdir, "covariance_matrices.json")) as f:
+            _cj = json.load(f)["covariances"]
+        _min_eig = float("inf"); _at_floor = False
+        for _j in range(K):
+            import numpy as _np
+            _eig = _np.linalg.eigvalsh(_np.array(_cj[f"profile_{_j}"]))
+            _min_eig = min(_min_eig, float(_eig.min()))
+            if float(_eig.min()) <= REG_COVAR * 1.5:
+                _at_floor = True
+        _sizes = fit_df.loc[fit_df["K"] == K, "min_class_N"].iloc[0]
+        _degen.append({
+            "K": K, "min_cov_eigenvalue": _min_eig,
+            "any_component_at_reg_floor": bool(_at_floor),
+            # well-behaved: no floor hit AND smallest class >= 5% of N
+            "well_behaved": bool((not _at_floor) and (_sizes / N >= 0.05)),
+        })
+    _dg = pd.DataFrame(_degen)
+    fit_df = fit_df.merge(_dg, on="K", how="left")
     fit_df.to_csv(os.path.join(RESULTS_DIR, "k_extended_model_comparison.csv"), index=False)
+    _dg.to_csv(os.path.join(RESULTS_DIR, "k_extended_degeneracy_guard.csv"), index=False)
 
     best_bic = fit_df.loc[fit_df["BIC"].idxmin()]
     best_aic = fit_df.loc[fit_df["AIC"].idxmin()]

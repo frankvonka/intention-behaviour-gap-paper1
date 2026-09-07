@@ -30,7 +30,7 @@ SCORES_PATH = "results/02_measurement/construct_scores.csv"
 RESULTS_DIR = "results/04_lpa_estimation"
 SEED = 42
 
-K_RANGE = [2, 3, 4, 5, 6]
+K_RANGE = [2, 3, 4, 5, 6, 7]
 COVARIANCE_TYPE = "full"  # primary specification
 N_INIT = 1000  # random initializations per K
 
@@ -45,7 +45,7 @@ def ensure_dir(d):
 def safe_entropy(posterior):
     """
     Classification entropy:
-    E = 1 - [sum_i sum_j p_ij * log(p_ij)] / (n * log(K))
+    E = -[sum_i sum_j p_ij * log(p_ij)] / (n * log(K))
     Uses numerically-safe log.
     """
     # Clip to avoid log(0)
@@ -55,7 +55,7 @@ def safe_entropy(posterior):
     if log_k == 0:
         return 0.0
     total = np.sum(p * np.log(p))
-    return float(1.0 - total / (n * log_k))
+    return float(-total / (n * log_k))
 
 
 def count_params_full(K, n_features):
@@ -173,17 +173,28 @@ def main():
         os.makedirs(kdir, exist_ok=True)
 
         # Profile parameters
+        # NOTE: `size` = hard-assigned counts (argmax posterior); `weight` =
+        # GMM mixture weights (soft). These differ whenever classification is
+        # uncertain (e.g. K=6 P1: weight 0.281 vs assigned 377/1166 = 0.323).
+        # Report profile SHARE from `size`/N; never present `weight` as N-share.
+        _sizes = np.asarray(sizes, dtype=int)
         profile = pd.DataFrame(
             {
                 "profile": range(K),
-                "size": sizes,
-                "proportion": res["weights"],
+                "size": _sizes,
+                "assigned_share": _sizes / N,
+                "weight": np.array(res["weights"], dtype=float),
                 "mean_z_INT": np.array(res["means"])[:, 0],
                 "mean_z_BE": np.array(res["means"])[:, 1],
             }
         )
         profile.to_csv(os.path.join(kdir, "profile_parameters.csv"), index=False)
-        profile[["profile", "size", "proportion"]].to_csv(
+        # Keep legacy `proportion` (= weight) for backward-compat, clearly labeled.
+        _psizes = profile[["profile", "size"]].copy()
+        _psizes["proportion_WEIGHT_NOT_SHARE"] = profile["weight"]
+        _psizes["proportion"] = profile["weight"]
+        _psizes["assigned_share"] = profile["assigned_share"]
+        _psizes.to_csv(
             os.path.join(kdir, "profile_sizes.csv"), index=False
         )
 

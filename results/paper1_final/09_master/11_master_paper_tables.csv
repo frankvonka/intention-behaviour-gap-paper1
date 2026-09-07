@@ -1,0 +1,11 @@
+table,N,n_rows
+01_sample,1166,7
+02_measurement,1166,10
+03_correlation,1166,100
+04_lpa_comparison,1166,5
+05_k6_profile,1166,6
+06_profile_gap,1166,5
+07_classification,1166,10
+08_stability,1166,17
+09_predictor,1166,10
+10_robustness,1166,11

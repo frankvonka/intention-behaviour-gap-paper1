@@ -1,0 +1,39 @@
+check,K,result,numerical_evidence,status
+random_start_stability,2,"BIC=5932.85, entropy=0.5998, converged=True","n_init=1000, BIC=5932.853752901799",PASS
+random_start_stability,3,"BIC=5906.63, entropy=0.6111, converged=True","n_init=1000, BIC=5906.631363033211",PASS
+random_start_stability,4,"BIC=4657.05, entropy=0.4236, converged=True","n_init=1000, BIC=4657.054958638112",PASS
+random_start_stability,5,"BIC=4633.42, entropy=0.3416, converged=True","n_init=1000, BIC=4633.418407189735",PASS
+random_start_stability,6,"BIC=2129.17, entropy=0.1418, converged=True","n_init=1000, BIC=2129.1734426912567",PASS
+random_start_stability,7,"BIC=1616.02, entropy=0.0991, converged=True","n_init=1000, BIC=1616.0232002565715",PASS
+covariance_sensitivity,2,"cov=full, BIC=5932.85, AIC=5877.18","cov=full, BIC=5932.85",PASS
+covariance_sensitivity,2,"cov=diag, BIC=6152.89, AIC=6107.34","cov=diag, BIC=6152.89",PASS
+covariance_sensitivity,2,"cov=spherical, BIC=6148.86, AIC=6113.44","cov=spherical, BIC=6148.86",PASS
+covariance_sensitivity,3,"cov=full, BIC=5909.15, AIC=5823.10","cov=full, BIC=5909.15",PASS
+covariance_sensitivity,3,"cov=diag, BIC=6000.69, AIC=5929.84","cov=diag, BIC=6000.69",PASS
+covariance_sensitivity,3,"cov=spherical, BIC=5978.10, AIC=5922.42","cov=spherical, BIC=5978.10",PASS
+covariance_sensitivity,4,"cov=full, BIC=4788.56, AIC=4672.15","cov=full, BIC=4788.56",PASS
+covariance_sensitivity,4,"cov=diag, BIC=4734.20, AIC=4638.04","cov=diag, BIC=4734.20",PASS
+covariance_sensitivity,4,"cov=spherical, BIC=4832.01, AIC=4756.09","cov=spherical, BIC=4832.01",PASS
+covariance_sensitivity,5,"cov=full, BIC=4649.22, AIC=4502.44","cov=full, BIC=4649.22",PASS
+covariance_sensitivity,5,"cov=diag, BIC=4687.32, AIC=4565.85","cov=diag, BIC=4687.32",PASS
+covariance_sensitivity,5,"cov=spherical, BIC=4818.99, AIC=4722.83","cov=spherical, BIC=4818.99",PASS
+covariance_sensitivity,6,"cov=full, BIC=3466.04, AIC=3288.89","cov=full, BIC=3466.04",PASS
+covariance_sensitivity,6,"cov=diag, BIC=4668.71, AIC=4521.93","cov=diag, BIC=4668.71",PASS
+covariance_sensitivity,6,"cov=spherical, BIC=3079.33, AIC=2962.92","cov=spherical, BIC=3079.33",PASS
+covariance_sensitivity,7,"cov=full, BIC=1655.04, AIC=1447.53","cov=full, BIC=1655.04",PASS
+covariance_sensitivity,7,"cov=diag, BIC=2052.76, AIC=1880.68","cov=diag, BIC=2052.76",PASS
+covariance_sensitivity,7,"cov=spherical, BIC=3041.33, AIC=2904.67","cov=spherical, BIC=3041.33",PASS
+score_sensitivity,,mean_vs_factor_INT: r=0.9999,r=0.9999,PASS
+score_sensitivity,,mean_vs_factor_BE: r=0.9981,r=0.9981,PASS
+outlier_sensitivity,2,"BIC_full=5932.85, BIC_no_outliers=5781.08","n_removed=10, BIC_full=5932.85",PASS
+outlier_sensitivity,3,"BIC_full=5909.15, BIC_no_outliers=5757.20","n_removed=10, BIC_full=5909.15",PASS
+outlier_sensitivity,4,"BIC_full=4788.56, BIC_no_outliers=4642.10","n_removed=10, BIC_full=4788.56",PASS
+outlier_sensitivity,5,"BIC_full=4649.22, BIC_no_outliers=2338.58","n_removed=10, BIC_full=4649.22",PASS
+outlier_sensitivity,6,"BIC_full=3466.04, BIC_no_outliers=1991.65","n_removed=10, BIC_full=3466.04",PASS
+outlier_sensitivity,7,"BIC_full=1655.04, BIC_no_outliers=1462.13","n_removed=10, BIC_full=1655.04",PASS
+random_seed_sensitivity,2,"BIC_std=0.00, seeds=[42, 123, 999, 2024, 7]",n_seeds=5,PASS
+random_seed_sensitivity,3,"BIC_std=0.00, seeds=[42, 123, 999, 2024, 7]",n_seeds=5,PASS
+random_seed_sensitivity,4,"BIC_std=64.50, seeds=[42, 123, 999, 2024, 7]",n_seeds=5,PASS
+random_seed_sensitivity,5,"BIC_std=1.76, seeds=[42, 123, 999, 2024, 7]",n_seeds=5,PASS
+random_seed_sensitivity,6,"BIC_std=821.86, seeds=[42, 123, 999, 2024, 7]",n_seeds=5,PASS
+random_seed_sensitivity,7,"BIC_std=1877.67, seeds=[42, 123, 999, 2024, 7]",n_seeds=5,PASS

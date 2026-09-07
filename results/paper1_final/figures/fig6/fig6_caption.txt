@@ -1,0 +1,1 @@
+Figure 6. Profile-specific intention-behaviour discrepancy (INT - BE) for the K = 7 primary solution. Positive values (navy) indicate INT > BE; negative values (crimson) indicate BE > INT. P3 is the nearest-balanced profile (difference = -0.0726); see bootstrap stability in Figure 8.

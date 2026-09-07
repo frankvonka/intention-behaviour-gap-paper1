@@ -1,0 +1,52 @@
+============================================================
+PHASE 18B — MULTICOLLINEARITY AUDIT COMPLETE
+============================================================
+N = 1166, K = 7, ref = 0
+Primary LL=-1480.3265, AIC=3128.6531, BIC=3553.8052, R2=0.2982, conv=True
+Max |beta diff| vs Phase 18: 0.000000
+Max VIF: 67.4422
+Condition number (corr): 18.4020
+Smallest eigenvalue: 0.260886
+High-corr pairs (|r|>=0.70): 1
+
+VIF table:
+ predictor       VIF  tolerance
+     COVID 67.442218   0.014828
+       SNO 64.934818   0.015400
+        PU 61.105732   0.016365
+       CON 59.037423   0.016938
+       PRI 51.246235   0.019514
+       ATT 43.214189   0.023141
+        PO 35.714168   0.028000
+       PEU 26.665426   0.037502
+       age 13.924741   0.071815
+ Education 13.780571   0.072566
+    income 12.870950   0.077694
+Occupation  3.980249   0.251241
+    gender  1.993872   0.501537
+
+Leave-one-out diagnostics:
+specification  log_likelihood         AIC         BIC  McFadden_pseudo_R2  converged
+    A_primary    -1480.326532 3128.653064 3553.805151            0.298248       True
+     drop_ATT    -1485.867712 3127.735423 3522.519504            0.295621       True
+     drop_CON    -1483.693592 3123.387185 3518.171265            0.296652       True
+     drop_SNO    -1521.501233 3199.002466 3593.786547            0.278729       True
+   drop_COVID    -1483.614621 3123.229243 3518.013323            0.296689       True
+      drop_PU    -1533.736807 3223.473615 3618.257696            0.272929       True
+     drop_PEU    -1494.779624 3145.559248 3540.343329            0.291396       True
+      drop_PO    -1485.159133 3126.318266 3521.102346            0.295957       True
+     drop_PRI    -1555.794685 3267.589369 3662.373450            0.262472       True
+
+Outputs:
+  results/18B_predictor_multicollinearity/primary_reproduction.csv — OK
+  results/18B_predictor_multicollinearity/primary_reproduction_summary.csv — OK
+  results/18B_predictor_multicollinearity/vif_full.csv — OK
+  results/18B_predictor_multicollinearity/predictor_correlation.csv — OK
+  results/18B_predictor_multicollinearity/condition_diagnostics.csv — OK
+  results/18B_predictor_multicollinearity/high_correlation_pairs.csv — OK
+  results/18B_predictor_multicollinearity/leave_one_predictor_out.csv — OK
+  results/18B_predictor_multicollinearity/leave_one_predictor_out_diagnostics.csv — OK
+  results/18B_predictor_multicollinearity/standardized_predictor_model.csv — OK
+  results/18B_predictor_multicollinearity/coefficient_stability.csv — OK
+  results/18B_predictor_multicollinearity/phase18B_master.csv — OK
+  results/18B_predictor_multicollinearity/README.md — OK

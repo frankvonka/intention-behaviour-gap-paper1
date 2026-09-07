@@ -4,7 +4,7 @@ Phase 05 — LPA Model Comparison and Selection
 Project: Intention–Behaviour Gap in Household Energy-Saving Behaviour
 
 Reads model results from Phase 04.
-Compares K = 2, 3, 4, 5, 6 and selects the best model using:
+Compares K = 2..7 and selects the best model using:
 1. Information criteria (BIC — minimized)
 2. Convergence/stability
 3. Classification quality (entropy, max-posterior)
@@ -28,7 +28,7 @@ PHASE04_DIR = "results/04_lpa_estimation"
 RESULTS_DIR = "results/05_lpa_selection"
 SEED = 42
 
-K_RANGE = [2, 3, 4, 5, 6]
+K_RANGE = [2, 3, 4, 5, 6, 7]
 COVARIANCE_TYPE = "full"
 N_INIT = 1000
 INDICATORS = ["z_INT", "z_BE"]
@@ -45,7 +45,7 @@ def safe_entropy(posterior):
     if log_k == 0:
         return 0.0
     total = np.sum(p * np.log(p))
-    return float(1.0 - total / (n * log_k))
+    return float(-total / (n * log_k))
 
 
 def count_params_full(K, n_features):
@@ -227,14 +227,73 @@ def main():
     # ------------------------------------------------------------------
     # Decision logic:
     # - Do NOT auto-select smallest or largest K.
-    # - Primary: BIC (minimized).
-    # - Check entropy (>= 0 is acceptable; values reported).
+    # - Primary: minimum BIC among converged, non-pathological fits.
+    # - Pathology guard: a fit is excluded ONLY for numerical breakdown —
+    #   non-convergence, or a positive total log-likelihood (the variance-
+    #   collapse degeneracy seen at K >= 8 in the extended comparison,
+    #   where near-singular components inflate LL above 0 and BIC loses
+    #   meaning).
+    # - Components sitting at the reg_covar floor in an otherwise converged,
+    #   positive-LL-normal fit are REPORTED as a caveat (common for full-
+    #   covariance GMMs on Likert ceiling spikes) but do NOT exclude the
+    #   fit from the BIC comparison.
+    # - Check entropy (in [0,1]; values reported).
     # - Check smallest class (> 1% typically flagged as too small).
     # - Check classification uncertainty.
-    # - Prefer the K that minimizes BIC among those with acceptable
-    #   profile sizes and reasonable entropy.
     # ------------------------------------------------------------------
+    import numpy.linalg as _la
+    import json as _json
+    reg_covar = 1e-6
     diagnostics = []
+    comp_df["min_cov_eigenvalue"] = np.nan
+    comp_df["any_component_at_reg_floor"] = False
+    comp_df["non_degenerate"] = True
+    for idx, r in comp_df.iterrows():
+        kdir = os.path.join(PHASE04_DIR, f"K_{int(r['K'])}")
+        cov_path = os.path.join(kdir, "covariance_matrices.json")
+        if os.path.exists(cov_path):
+            with open(cov_path) as fh:
+                covs = _json.load(fh)["covariances"]
+            min_eig = min(
+                float(_la.eigvalsh(np.array(v)).min()) for v in covs.values()
+            )
+            at_floor = bool(min_eig <= reg_covar * 1.5)
+            comp_df.loc[idx, "min_cov_eigenvalue"] = min_eig
+            comp_df.loc[idx, "any_component_at_reg_floor"] = at_floor
+            # Pathology = non-convergence or positive total LL (variance
+            # collapse). reg-floor components are a caveat, not an exclusion.
+            pathological = (not bool(r["converged"])) or (
+                float(r["log_likelihood"]) >= 0.0
+            )
+            comp_df.loc[idx, "non_degenerate"] = not pathological
+    for _, r in comp_df.iterrows():
+        if bool(r["any_component_at_reg_floor"]):
+            diagnostics.append(
+                {
+                    "criterion": "reg_floor_component_caveat",
+                    "selected_K": int(r["K"]),
+                    "value": float(r["min_cov_eigenvalue"]),
+                    "rule": "min component eigenvalue <= 1.5*reg_covar; reported "
+                            "as a caveat, does not exclude the fit from BIC "
+                            "selection",
+                }
+            )
+
+    _eligible = comp_df[comp_df["converged"] & comp_df["non_degenerate"]]
+    if len(_eligible) > 0:
+        selected_K = int(_eligible.loc[_eligible["BIC"].idxmin(), "K"])
+        selection_basis = (
+            "Minimum BIC among converged, non-pathological fits (pathology "
+            "guard: non-convergence or positive log-likelihood excludes a "
+            "fit; reg_covar-floor components are reported as a caveat); "
+            f"n_eligible={len(_eligible)} of {len(comp_df)}"
+        )
+    else:
+        selected_K = best_K_bic
+        selection_basis = (
+            "WARNING: all fits pathological or non-converged; fell back to plain "
+            "minimum BIC over converged fits"
+        )
     diagnostics.append(
         {
             "criterion": "BIC_minimum",
@@ -252,15 +311,16 @@ def main():
         }
     )
 
-    # Entropy threshold check (entropy should be <= 1 for valid formulation;
-    # the sklearn GaussianMixture entropy here uses sum formulation — verify)
+    # Normalized classification entropy E = -sum(p log p)/(n log K) in [0,1].
+    # Higher = better separated (E -> 1 means posteriors near 0/1).
+    # (Historical bug: an earlier revision computed 1-E, giving values > 1.)
     for _, r in comp_df.iterrows():
         diagnostics.append(
             {
                 "criterion": "entropy",
                 "selected_K": int(r["K"]),
                 "value": float(r["entropy"]),
-                "rule": "<=1 indicates good classification (higher = better separation)",
+                "rule": "in [0,1]; higher = better separated",
             }
         )
 
@@ -288,28 +348,20 @@ def main():
     diag_df.to_csv(os.path.join(RESULTS_DIR, "selection_diagnostics.csv"), index=False)
 
     # ------------------------------------------------------------------
-    # SELECTED K
-    # The selection considers: BIC minimum, entropy, profile sizes,
-    # and classification quality. We do not auto-select solely on BIC.
+    # SELECTED K — computed above by the degeneracy-guarded minimum-BIC rule.
+    # (selected_K and selection_basis are set in the decision-logic block.)
     # ------------------------------------------------------------------
-    # Build a score: BIC is primary. Then check stability + entropy + sizes.
     eligible = comp_df.copy()
     # Flag models with very small classes (< 1%) as problematic but not
     # automatically excluded
     eligible["has_tiny_class"] = eligible["smallest_class_pct"] < 1.0
 
-    # Primary: minimum BIC
-    selected_K = best_K_bic
-
     # Save selected K
     selected_info = pd.DataFrame(
         {
             "selected_K": [selected_K],
-            "selection_basis": [
-                "Minimum BIC with converged solution, acceptable entropy, "
-                "and stable profile sizes"
-            ],
-            "BIC_value": [float(best_bic_val)],
+            "selection_basis": [selection_basis],
+            "BIC_value": [float(comp_df.loc[comp_df['K'] == selected_K, 'BIC'].values[0])],
             "AIC_value": [float(comp_df.loc[comp_df['K'] == selected_K, 'AIC'].values[0])],
             "entropy_value": [float(comp_df.loc[comp_df['K'] == selected_K, 'entropy'].values[0])],
             "covariance_type": [COVARIANCE_TYPE],

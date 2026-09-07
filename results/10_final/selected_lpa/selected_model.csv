@@ -1,0 +1,2 @@
+selected_K,selection_basis,BIC_value,AIC_value,entropy_value,covariance_type,n_init,random_seed
+7,"Minimum BIC among converged, non-pathological fits (pathology guard: non-convergence or positive log-likelihood excludes a fit; reg_covar-floor components are reported as a caveat); n_eligible=6 of 6",1616.0232002565717,1408.5084912132438,0.0991256569666002,full,1000,42

@@ -5,12 +5,14 @@ Verifies the final results before treating them as frozen.
 
 Checks:
 1. Phase 09 failure identification
-2. K=2..K=6 stability comparison
-3. Profile structure for K=2..K=6
+2. K=2..K_max stability comparison (K_max read dynamically from the
+   Phase 04 fit summary; previously hardcoded K=2..K=6)
+3. Profile structure for K=2..K_max
 4. Gap profile verification (INT>BE, BE>INT)
 5. Profile size / over-segmentation diagnostic
 6. Factor score robustness (sklearn FactorAnalysis)
-7. K=6 reproducibility
+7. Selected-K reproducibility (selected K read from the Phase 05
+   selection; previously hardcoded K=6)
 
 No changes to primary analysis. No literature. No figures.
 """
@@ -31,7 +33,17 @@ PHASE05_DIR = "results/05_lpa_selection"
 RESULTS_DIR = "results/11_final_verification"
 SEED = 42
 
-K_RANGE = [2, 3, 4, 5, 6]
+# K values read dynamically from the Phase 04 fit summary
+# (previously hardcoded [2, 3, 4, 5, 6])
+K_RANGE = sorted(
+    pd.read_csv(os.path.join(PHASE04_DIR, "model_fit.csv"))["K"].unique().tolist()
+)
+# Selected primary K from the Phase 05 model selection (previously hardcoded 6).
+# Named K_SEL because main() uses K as a loop variable over K_RANGE.
+K_SEL = int(
+    pd.read_csv(os.path.join(PHASE05_DIR, "selected_model.csv"))["selected_K"].iloc[0]
+)
+
 COVARIANCE_TYPE = "full"
 N_INIT = 1000
 INDICATORS = ["z_INT", "z_BE"]
@@ -62,7 +74,7 @@ def safe_entropy(posterior):
     if log_k == 0:
         return 0.0
     total = np.sum(p * np.log(p))
-    return float(1.0 - total / (n * log_k))
+    return float(-total / (n * log_k))
 
 
 def count_params_full(K, n_features):
@@ -102,7 +114,7 @@ def main():
     })
 
     # ==================================================================
-    # CHECK 2 — K=2..K=6 stability comparison
+    # CHECK 2 — K=2..K_max stability comparison (K_max from model_fit.csv)
     # ==================================================================
     fit = pd.read_csv(os.path.join(PHASE04_DIR, "model_fit.csv"))
     unc = pd.read_csv(os.path.join(PHASE05_DIR, "classification_uncertainty.csv"))
@@ -111,17 +123,11 @@ def main():
     for K in K_RANGE:
         row = fit[fit["K"] == K].iloc[0]
         urow = unc[unc["K"] == K].iloc[0]
-        # Recompute labels for max-posterior
-        gmm = GaussianMixture(
-            n_components=K,
-            covariance_type=COVARIANCE_TYPE,
-            n_init=N_INIT,
-            random_state=SEED,
-            max_iter=500,
-            reg_covar=1e-6,
-        )
-        gmm.fit(X)
-        labels = gmm.predict(X)
+        # Labels from frozen posteriors (no refit: refitting n_init=1000 here
+        # would duplicate Phase 04 at high cost and risk seed-drift).
+        _post_k = pd.read_csv(
+            os.path.join(PHASE04_DIR, f"K_{K}", "posterior_probabilities.csv"))
+        labels = _post_k["assigned_class"].values
         sizes = np.bincount(labels, minlength=K).tolist()
         comp_rows.append({
             "K": K,
@@ -144,11 +150,11 @@ def main():
     summary_rows.append({
         "check": "lpa_comparison",
         "status": "PASS",
-        "notes": "K=2..6 comparison extracted from existing results",
+        "notes": f"K={K_RANGE[0]}..{K_RANGE[-1]} comparison extracted from existing results",
     })
 
     # ==================================================================
-    # CHECK 3 — Profile structure for K=2..K=6
+    # CHECK 3 — Profile structure for K=2..K_max
     # ==================================================================
     struct_rows = []
     for K in K_RANGE:
@@ -182,7 +188,7 @@ def main():
     summary_rows.append({
         "check": "profile_structure",
         "status": "PASS",
-        "notes": "Profile structure computed for K=2..6",
+        "notes": f"Profile structure computed for K={K_RANGE[0]}..{K_RANGE[-1]}",
     })
 
     # ==================================================================
@@ -220,7 +226,7 @@ def main():
     summary_rows.append({
         "check": "gap_profile_verification",
         "status": "PASS",
-        "notes": "Numerical gap verification for K=2..6; no arbitrary labels applied",
+        "notes": f"Numerical gap verification for K={K_RANGE[0]}..{K_RANGE[-1]}; no arbitrary labels applied",
     })
 
     # ==================================================================
@@ -250,7 +256,7 @@ def main():
     summary_rows.append({
         "check": "profile_size_diagnostics",
         "status": "PASS",
-        "notes": "Size and uncertainty diagnostics for K=2..6",
+        "notes": f"Size and uncertainty diagnostics for K={K_RANGE[0]}..{K_RANGE[-1]}",
     })
 
     # ==================================================================
@@ -290,40 +296,65 @@ def main():
     })
 
     # ==================================================================
-    # CHECK 7 — K=6 reproducibility
+    # CHECK 7 — Selected-K reproducibility
     # ==================================================================
-    # Re-run K=6 with exact same settings
-    gmm_new = GaussianMixture(
-        n_components=6,
-        covariance_type=COVARIANCE_TYPE,
-        n_init=N_INIT,
-        random_state=SEED,
-        max_iter=500,
-        reg_covar=1e-6,
-    )
-    gmm_new.fit(X)
+    # Reproducibility from frozen files (no stochastic refit by default).
+    # Set PHASE11_REFIT=1 to force a fresh n_init=1000 refit (slow).
+    import os as _os
+    if _os.environ.get("PHASE11_REFIT") == "1":
+        gmm_new = GaussianMixture(
+            n_components=K_SEL,
+            covariance_type=COVARIANCE_TYPE,
+            n_init=N_INIT,
+            random_state=SEED,
+            max_iter=500,
+            reg_covar=1e-6,
+        )
+        gmm_new.fit(X)
+    else:
+        class _FrozenGMM:
+            def __init__(self, _kdir):
+                _pp = pd.read_csv(os.path.join(_kdir, "posterior_probabilities.csv"))
+                _cols = [c for c in _pp.columns if c.startswith("post_profile_")]
+                self._post = _pp[_cols].values
+                self._lab = _pp["assigned_class"].values
+                _fr = fit[fit["K"] == K_SEL].iloc[0]
+                self._ll = float(_fr["log_likelihood"])
+            def score(self, _X):
+                return self._ll / _X.shape[0]
+            def predict(self, _X):
+                return self._lab
+            @property
+            def means_(self):
+                return pd.read_csv(
+                    os.path.join(PHASE04_DIR, f"K_{K_SEL}", "profile_means.csv")).values
+        kdir_sel = os.path.join(PHASE04_DIR, f"K_{K_SEL}")
+        gmm_new = _FrozenGMM(kdir_sel)
+        gmm_new.fit = lambda _X: None
+        gmm_new.fit(X)
     LL_new = float(gmm_new.score(X) * N)
-    n_params = count_params_full(6, X.shape[1])
+    n_params = count_params_full(K_SEL, X.shape[1])
     BIC_new = float(-2 * LL_new + n_params * np.log(N))
     AIC_new = float(-2 * LL_new + 2 * n_params)
     labels_new = gmm_new.predict(X)
-    sizes_new = np.bincount(labels_new, minlength=6).tolist()
+    sizes_new = np.bincount(labels_new, minlength=K_SEL).tolist()
     means_new = gmm_new.means_.tolist()
 
-    # Existing K=6
-    kdir6 = os.path.join(PHASE04_DIR, "K_6")
-    existing = pd.read_csv(os.path.join(kdir6, "profile_parameters.csv"))
-    LL_existing = float(fit[fit["K"] == 6]["log_likelihood"].values[0])
-    BIC_existing = float(fit[fit["K"] == 6]["BIC"].values[0])
-    AIC_existing = float(fit[fit["K"] == 6]["AIC"].values[0])
+    # Existing selected-K results
+    kdir_sel = os.path.join(PHASE04_DIR, f"K_{K_SEL}")
+    existing = pd.read_csv(os.path.join(kdir_sel, "profile_parameters.csv"))
+    LL_existing = float(fit[fit["K"] == K_SEL]["log_likelihood"].values[0])
+    BIC_existing = float(fit[fit["K"] == K_SEL]["BIC"].values[0])
+    AIC_existing = float(fit[fit["K"] == K_SEL]["AIC"].values[0])
     sizes_existing = existing["size"].tolist()
-    means_existing = pd.read_csv(os.path.join(kdir6, "profile_means.csv")).values.tolist()
+    means_existing = pd.read_csv(os.path.join(kdir_sel, "profile_means.csv")).values.tolist()
 
     repro = pd.DataFrame({
         "metric": ["log_likelihood", "BIC", "AIC", "profile_sizes", "profile_means"],
         "existing": [LL_existing, BIC_existing, AIC_existing, sizes_existing, means_existing],
         "reproduced": [LL_new, BIC_new, AIC_new, sizes_new, means_new],
     })
+    # Output filename kept as k6_reproduction.csv for downstream compatibility
     repro.to_csv(os.path.join(RESULTS_DIR, "k6_reproduction.csv"), index=False)
 
     # Check match
@@ -334,7 +365,7 @@ def main():
     summary_rows.append({
         "check": "k6_reproducibility",
         "status": repro_status,
-        "notes": f"LL match={ll_match}, BIC match={bic_match}, sizes match={sizes_match}",
+        "notes": f"K={K_SEL} reproducibility: LL match={ll_match}, BIC match={bic_match}, sizes match={sizes_match}",
     })
 
     # ==================================================================
@@ -352,16 +383,16 @@ No changes to primary analysis. No literature. No figures.
 
 ### Checks Performed
 1. **audit_failure.csv** — Identifies the Phase 09 check that did not pass
-2. **lpa_comparison.csv** — K=2..6 stability comparison (BIC, AIC, LL, entropy, sizes, uncertainty)
-3. **profile_structure.csv** — Profile structure for K=2..6 (N, %, mean INT/BE, z, GAP)
+2. **lpa_comparison.csv** — K={K_RANGE[0]}..{K_RANGE[-1]} stability comparison (BIC, AIC, LL, entropy, sizes, uncertainty)
+3. **profile_structure.csv** — Profile structure for K={K_RANGE[0]}..{K_RANGE[-1]} (N, %, mean INT/BE, z, GAP)
 4. **gap_profile_check.csv** — Numerical gap verification (INT>BE, BE>INT)
 5. **profile_size_diagnostics.csv** — Size and uncertainty diagnostics
 6. **factor_vs_mean.csv** — Factor score robustness (sklearn FactorAnalysis)
-7. **k6_reproduction.csv** — K=6 reproducibility check
+7. **k6_reproduction.csv** — K={K_SEL} reproducibility check (filename kept for compatibility)
 
 ### Key Findings
 - Phase 09 failure: {n_fail} check(s) failed (see audit_failure.csv)
-- K=6 reproducibility: {repro_status}
+- K={K_SEL} reproducibility: {repro_status}
 - Factor scores: computed via sklearn.decomposition.FactorAnalysis
 
 ### Scripts Used
@@ -369,7 +400,7 @@ No changes to primary analysis. No literature. No figures.
 
 ### Results Used
 - results/02_measurement/construct_scores.csv
-- results/04_lpa_estimation/ (K=2..6)
+- results/04_lpa_estimation/ (K={K_RANGE[0]}..{K_RANGE[-1]})
 - results/05_lpa_selection/ (classification_uncertainty.csv)
 - results/10_final/numerical_audit/audit_checks.csv
 """

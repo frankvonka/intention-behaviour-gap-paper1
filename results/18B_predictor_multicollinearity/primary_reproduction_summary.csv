@@ -1,0 +1,8 @@
+metric,p18B
+log_likelihood,-1480.326532132418
+AIC,3128.653064264836
+BIC,3553.8051510853124
+McFadden_pseudo_R2,0.2982477700301479
+converged,1.0
+max_abs_beta_diff_vs_phase18,2.220446049250313e-16
+max_abs_OR_diff_vs_phase18,2.220446049250313e-16

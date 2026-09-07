@@ -1,0 +1,1 @@
+Figure 8. Direction consistency of each profile across 200 bootstrap replications of the K = 7 LPA, reported as % INT > BE / % BE > INT. P4 is nearest chance (59.0% / 41.0%) and should be interpreted cautiously. Profiles are not equally stable.

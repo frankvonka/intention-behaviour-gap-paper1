@@ -24,8 +24,8 @@ P18 = "results/18_profile_predictors"
 P18B = "results/18B_predictor_multicollinearity"
 P19 = "results/19_final_audit"
 
-K = 6
-N = 1166
+K = int(pd.read_csv(os.path.join("results/05_lpa_selection", "selected_model.csv"))["selected_K"].iloc[0])
+N = int(pd.read_csv(os.path.join("results/01_data_inspection", "data_dimensions.csv"))["N_rows"].iloc[0])
 
 
 def ensure_dir(d):
@@ -115,13 +115,13 @@ def main():
     master_rows.append({"table": "04_lpa_comparison", "N": N, "n_rows": len(lpa_rows)})
 
     # ------------------------------------------------------------------
-    # 05. K=6 PROFILE TABLE
+    # 05. SELECTED-K PROFILE TABLE
     # ------------------------------------------------------------------
     kdir = os.path.join(P04, f"K_{K}")
     post = pd.read_csv(os.path.join(kdir, "posterior_probabilities.csv"))
     means = pd.read_csv(os.path.join(kdir, "profile_means.csv"))
     sizes = pd.read_csv(os.path.join(kdir, "profile_sizes.csv"))
-    prob_cols = [c for c in post.columns if c.startswith("prob_")]
+    prob_cols = [c for c in post.columns if c.startswith("post_profile_")]
     maxprob = post[prob_cols].max(axis=1).values
     labels = post["assigned_class"].values
     if "profile" in means.columns:
@@ -223,15 +223,34 @@ def main():
             "value": float(r["pct_BE_gt_INT"]),
             "source": "results/14_k6_stability/configuration_stability.csv",
         })
+    # split_sample_results.csv has one ROW PER PROFILE per half. `n_respondents`
+    # is the half-N repeated on every profile row of that half, and `size` is
+    # the profile's headcount within the half. Correct totals: N = sum of
+    # `size` over both halves (=1166); per-half N = `n_respondents` of one row.
+    _n_halves = int(split["half"].nunique())
+    _n_total = int(split["size"].sum())
+    _n_per_half = int(split.groupby("half")["size"].sum().iloc[0])
     stab_rows.append({
         "metric": "split_sample_n_halves",
-        "value": int(split["half"].nunique()),
+        "value": _n_halves,
         "source": "results/14_k6_stability/split_sample_results.csv",
     })
     stab_rows.append({
         "metric": "split_sample_n_respondents",
-        "value": int(split["n_respondents"].sum()),
+        "value": _n_total,
         "source": "results/14_k6_stability/split_sample_results.csv",
+    })
+    stab_rows.append({
+        "metric": "split_sample_n_per_half",
+        "value": _n_per_half,
+        "source": "results/14_k6_stability/split_sample_results.csv",
+    })
+    stab_rows.append({
+        "metric": "split_sample_matching_cost",
+        "value": float(pd.read_csv(
+            os.path.join(P14, "split_sample_matching.csv"))
+            ["matching_cost_total"].iloc[0]),
+        "source": "results/14_k6_stability/split_sample_matching.csv",
     })
     pd.DataFrame(stab_rows).to_csv(
         os.path.join(RESULTS_DIR, "08_stability_table.csv"), index=False)
@@ -318,7 +337,7 @@ def main():
     # ------------------------------------------------------------------
     # README
     # ------------------------------------------------------------------
-    readme = """# Phase 21 — Final Paper Table Data
+    readme = f"""# Phase 21 — Final Paper Table Data
 
 ## Purpose
 Clean numerical tables for Paper 1. Every number is copied from
@@ -340,13 +359,15 @@ no plots, no prose.
 - README.md
 
 ## Frozen values preserved
-- N = 1166
-- K = 6 (minimum BIC under primary specification)
-- K=6 profile sizes = [124, 377, 262, 90, 54, 259]
-- INT-BE r = 0.6515
-- K=6 BIC = 2129.1734
-- K=6 AIC = 1952.0267
-- K=6 entropy = 1.1418
+- N = {N}
+- K = {K} (minimum BIC among non-degenerate fits, per
+  results/05_lpa_selection/selected_model.csv)
+- K={K} profile sizes = {[r['N'] for r in k6_rows]}
+- INT-BE r = {float(intbe['r']):.4f}
+- K={K} BIC = {float(fit.loc[fit['K'] == K, 'BIC'].iloc[0]):.4f}
+- K={K} AIC = {float(fit.loc[fit['K'] == K, 'AIC'].iloc[0]):.4f}
+- K={K} normalized classification entropy E = -sum(p log p)/(n log K)
+  (in [0,1]; higher = better separated)
 
 ## No Modifications
 All values copied from existing result files. No rounding changes

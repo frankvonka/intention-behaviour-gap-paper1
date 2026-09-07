@@ -1,0 +1,1 @@
+Figure 4. BIC values for Gaussian mixture profiles estimated for K = 2 to 7 under the primary specification (full covariance, n_init = 1000, seed = 42, mean scores). K = 7 was selected as the primary specification because it produced the minimum BIC (1616.02) among the estimated range under the prespecified primary model.
